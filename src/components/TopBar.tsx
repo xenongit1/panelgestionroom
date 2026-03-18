@@ -1,13 +1,14 @@
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Profile } from "@/types/dashboard";
 
 interface TopBarProps {
   profile: Profile;
+  onLogout?: () => void;
 }
 
-export function TopBar({ profile }: TopBarProps) {
+export function TopBar({ profile, onLogout }: TopBarProps) {
   const initials = (profile.company_name || profile.email || "GR")
     .split(" ")
     .map((w) => w[0])
