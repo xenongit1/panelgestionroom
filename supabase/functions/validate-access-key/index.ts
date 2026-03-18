@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const VALID_STATUSES = ["active", "pro", "anual"];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,7 +19,7 @@ Deno.serve(async (req) => {
     if (!key) {
       return new Response(
         JSON.stringify({ valid: false, reason: "invalid" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -39,13 +41,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (profile.plan_status !== "active") {
+    // Check plan_status against allowed values
+    if (!profile.plan_status || !VALID_STATUSES.includes(profile.plan_status)) {
       return new Response(
-        JSON.stringify({ valid: false, reason: "inactive" }),
+        JSON.stringify({ valid: false, reason: "expired" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // Check subscription end date
     if (profile.subscription_end && new Date(profile.subscription_end) < new Date()) {
       return new Response(
         JSON.stringify({ valid: false, reason: "expired" }),
