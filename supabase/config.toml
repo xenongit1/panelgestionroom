@@ -1,1 +1,7 @@
 project_id = "njowwmgtxkketyiaflfp"
+
+[functions.validate-access-key]
+verify_jwt = false
+
+[functions.dashboard-data]
+verify_jwt = false
