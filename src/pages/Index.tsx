@@ -15,26 +15,21 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const activated = localStorage.getItem("gr_panel_activated");
-    if (!activated) {
-      navigate("/activate", { replace: true });
+    const sessionStr = localStorage.getItem("gr_session");
+    if (!sessionStr) {
+      const activated = localStorage.getItem("gr_panel_activated");
+      navigate(activated ? "/login" : "/activate", { replace: true });
       return;
     }
 
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
       const accessKey = localStorage.getItem("gr_access_key");
       if (!accessKey) {
         navigate("/activate", { replace: true });
         return;
       }
 
-      // Fetch profile via validate-access-key
+      // Validate access key and fetch profile
       const { data: valData } = await supabase.functions.invoke("validate-access-key", {
         body: { key: accessKey },
       });
@@ -42,6 +37,7 @@ const Dashboard = () => {
       if (!valData?.valid) {
         localStorage.removeItem("gr_panel_activated");
         localStorage.removeItem("gr_access_key");
+        localStorage.removeItem("gr_session");
         navigate("/activate", { replace: true });
         return;
       }
@@ -61,15 +57,14 @@ const Dashboard = () => {
     };
 
     init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") {
-        navigate("/login", { replace: true });
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("gr_session");
+    localStorage.removeItem("gr_panel_activated");
+    localStorage.removeItem("gr_access_key");
+    navigate("/login", { replace: true });
+  };
 
   if (loading) {
     return (
@@ -88,7 +83,7 @@ const Dashboard = () => {
     <div className="flex h-screen overflow-hidden bg-background">
       <LeftSidebar profile={profile} />
       <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-        <TopBar profile={profile} />
+        <TopBar profile={profile} onLogout={handleLogout} />
         <div className="space-y-6">
           <KPICards kpis={dashboardData?.kpis} />
           <ReservationsTable reservations={dashboardData?.reservations || []} />

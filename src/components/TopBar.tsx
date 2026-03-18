@@ -1,13 +1,14 @@
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Profile } from "@/types/dashboard";
 
 interface TopBarProps {
   profile: Profile;
+  onLogout?: () => void;
 }
 
-export function TopBar({ profile }: TopBarProps) {
+export function TopBar({ profile, onLogout }: TopBarProps) {
   const initials = (profile.company_name || profile.email || "GR")
     .split(" ")
     .map((w) => w[0])
@@ -34,6 +35,11 @@ export function TopBar({ profile }: TopBarProps) {
         <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Bell className="h-4 w-4" />
         </button>
+        {onLogout && (
+          <button onClick={onLogout} className="relative flex h-9 w-9 items-center justify-center rounded-lg border bg-card text-muted-foreground hover:text-destructive hover:bg-accent transition-colors" title="Cerrar sesión">
+            <LogOut className="h-4 w-4" />
+          </button>
+        )}
         <Avatar className="h-9 w-9">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
             {initials}

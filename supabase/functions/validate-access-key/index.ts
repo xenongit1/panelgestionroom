@@ -57,8 +57,16 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check if an owner already exists in panel_users
+    const { data: ownerCheck } = await supabase
+      .from("panel_users")
+      .select("id")
+      .eq("profile_id", profile.id)
+      .eq("role", "owner")
+      .maybeSingle();
+
     return new Response(
-      JSON.stringify({ valid: true, profile }),
+      JSON.stringify({ valid: true, profile, has_owner: !!ownerCheck }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

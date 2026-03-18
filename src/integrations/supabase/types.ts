@@ -70,6 +70,41 @@ export type Database = {
           },
         ]
       }
+      panel_users: {
+        Row: {
+          created_at: string
+          id: string
+          password_hash: string
+          profile_id: string
+          role: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password_hash: string
+          profile_id: string
+          role?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password_hash?: string
+          profile_id?: string
+          role?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panel_users_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_requests: {
         Row: {
           company: string
@@ -112,8 +147,6 @@ export type Database = {
           email: string | null
           id: string
           owner_name: string | null
-          panel_password: string | null
-          panel_username: string | null
           plan_status: string | null
           plan_type: string
           stripe_customer_id: string | null
@@ -132,8 +165,6 @@ export type Database = {
           email?: string | null
           id: string
           owner_name?: string | null
-          panel_password?: string | null
-          panel_username?: string | null
           plan_status?: string | null
           plan_type?: string
           stripe_customer_id?: string | null
@@ -152,8 +183,6 @@ export type Database = {
           email?: string | null
           id?: string
           owner_name?: string | null
-          panel_password?: string | null
-          panel_username?: string | null
           plan_status?: string | null
           plan_type?: string
           stripe_customer_id?: string | null
@@ -320,8 +349,6 @@ export type Database = {
           email: string | null
           id: string
           owner_name: string | null
-          panel_password: string | null
-          panel_username: string | null
           plan_status: string | null
           plan_type: string
           stripe_customer_id: string | null
