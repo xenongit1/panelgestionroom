@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "username_taken" });
       }
 
-      const passwordHash = await bcrypt.hash(password);
+      const passwordHash = bcrypt.hashSync(password, 10);
 
       const { data: newUser, error: insertError } = await supabase
         .from("panel_users")
