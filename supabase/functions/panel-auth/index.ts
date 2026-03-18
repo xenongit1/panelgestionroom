@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import bcrypt from "npm:bcryptjs@2.4.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "username_taken" });
       }
 
-      const passwordHash = await bcrypt.hash(password);
+      const passwordHash = bcrypt.hashSync(password, 10);
 
       const { data: newUser, error: insertError } = await supabase
         .from("panel_users")
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "invalid_credentials" });
       }
 
-      const valid = await bcrypt.compare(password, user.password_hash);
+      const valid = bcrypt.compareSync(password, user.password_hash);
       if (!valid) {
         return jsonResponse({ error: "invalid_credentials" });
       }
