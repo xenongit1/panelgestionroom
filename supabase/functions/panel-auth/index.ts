@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "invalid_credentials" });
       }
 
-      const valid = await bcrypt.compare(password, user.password_hash);
+      const valid = bcrypt.compareSync(password, user.password_hash);
       if (!valid) {
         return jsonResponse({ error: "invalid_credentials" });
       }
