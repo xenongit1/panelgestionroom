@@ -6,5 +6,5 @@ verify_jwt = false
 [functions.dashboard-data]
 verify_jwt = false
 
-[functions.register-owner]
+[functions.panel-auth]
 verify_jwt = false
