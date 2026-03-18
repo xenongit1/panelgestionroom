@@ -116,6 +116,12 @@ export default function ActivatePage() {
         return;
       }
 
+      if (data?.error === "unauthorized") {
+        setError("No autorizado. Verifica tu clave de acceso e inténtalo de nuevo.");
+        setLoading(false);
+        return;
+      }
+
       if (data?.error) {
         setError(data.error);
         setLoading(false);
