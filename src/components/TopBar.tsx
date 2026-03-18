@@ -21,7 +21,7 @@ export function TopBar({ profile, onLogout }: TopBarProps) {
       <div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Bienvenido, {profile.panel_username || profile.company_name || "Usuario"}
+          Bienvenido, {profile.company_name || "Usuario"}
         </p>
       </div>
       <div className="flex items-center gap-3">

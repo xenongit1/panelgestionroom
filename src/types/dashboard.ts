@@ -10,7 +10,7 @@ export interface Profile {
   plan_status: string | null;
   plan_type: string;
   subscription_end: string | null;
-  panel_username: string | null;
+  
 }
 
 export interface Sala {

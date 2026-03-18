@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+        }
+        Relationships: []
+      }
       game_masters: {
         Row: {
           available: boolean | null
@@ -69,6 +90,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      leads_requests: {
+        Row: {
+          comments: string | null
+          created_at: string
+          email: string
+          id: string
+          phone: string | null
+          room_name: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          phone?: string | null
+          room_name: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          phone?: string | null
+          room_name?: string
+        }
+        Relationships: []
       }
       panel_users: {
         Row: {

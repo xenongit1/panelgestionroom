@@ -30,11 +30,19 @@ Deno.serve(async (req) => {
 
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("id, email, company_name, company_email, company_phone, country, city, access_key, plan_status, plan_type, subscription_end, panel_username")
-      .eq("access_key", key)
+      .select("id, email, company_name, company_email, company_phone, country, city, access_key, plan_status, plan_type, subscription_end")
+      .eq("access_key", key.trim())
       .maybeSingle();
 
-    if (error || !profile) {
+    if (error) {
+      console.error("Supabase query error:", { message: error.message, details: error.details, hint: error.hint, code: error.code });
+      return new Response(
+        JSON.stringify({ valid: false, reason: "query_error" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!profile) {
       return new Response(
         JSON.stringify({ valid: false, reason: "invalid" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
