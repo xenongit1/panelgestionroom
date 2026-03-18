@@ -35,6 +35,41 @@ export type Database = {
         }
         Relationships: []
       }
+      game_masters: {
+        Row: {
+          available: boolean | null
+          avatar: string | null
+          created_at: string
+          id: string
+          name: string
+          profile_id: string
+        }
+        Insert: {
+          available?: boolean | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          profile_id: string
+        }
+        Update: {
+          available?: boolean | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_masters_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           access_key: string | null
@@ -94,6 +129,108 @@ export type Database = {
           subscription_start?: string | null
         }
         Relationships: []
+      }
+      reservas: {
+        Row: {
+          client_name: string
+          created_at: string
+          date: string
+          game_master_id: string | null
+          id: string
+          players: number | null
+          profile_id: string
+          sala_id: string
+          status: string
+          time: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          date: string
+          game_master_id?: string | null
+          id?: string
+          players?: number | null
+          profile_id: string
+          sala_id: string
+          status?: string
+          time: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          date?: string
+          game_master_id?: string | null
+          id?: string
+          players?: number | null
+          profile_id?: string
+          sala_id?: string
+          status?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservas_game_master_id_fkey"
+            columns: ["game_master_id"]
+            isOneToOne: false
+            referencedRelation: "game_masters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "salas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salas: {
+        Row: {
+          active: boolean | null
+          capacity: number | null
+          created_at: string
+          difficulty: number | null
+          id: string
+          name: string
+          profile_id: string
+          theme: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          capacity?: number | null
+          created_at?: string
+          difficulty?: number | null
+          id?: string
+          name: string
+          profile_id: string
+          theme?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          capacity?: number | null
+          created_at?: string
+          difficulty?: number | null
+          id?: string
+          name?: string
+          profile_id?: string
+          theme?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_content: {
         Row: {
