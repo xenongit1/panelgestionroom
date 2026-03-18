@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
       .from("profiles")
       .select("id")
       .eq("access_key", key)
+      .in("plan_status", ["pro", "anual", "active"])
       .maybeSingle();
 
     if (profileError || !profile) {
