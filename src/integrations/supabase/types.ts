@@ -283,6 +283,24 @@ export type Database = {
         }
         Relationships: []
       }
+      validation_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          ip_address: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          ip_address: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          ip_address?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -322,6 +340,7 @@ export type Database = {
         Args: { new_plan: string; target_user_id: string }
         Returns: undefined
       }
+      cleanup_old_validation_attempts: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

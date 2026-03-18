@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
     if (!accessKey || !email || !password) {
       return new Response(
-        JSON.stringify({ error: "Faltan campos obligatorios." }),
+        JSON.stringify({ error: "missing_fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -37,28 +37,27 @@ Deno.serve(async (req) => {
 
     if (profileError || !profile) {
       return new Response(
-        JSON.stringify({ error: "Clave de acceso no válida." }),
+        JSON.stringify({ error: "invalid_key" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (!profile.plan_status || !VALID_STATUSES.includes(profile.plan_status)) {
       return new Response(
-        JSON.stringify({ error: "Esta clave no tiene un plan activo asociado." }),
+        JSON.stringify({ error: "no_active_plan" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check if profile already has an auth user linked (email set means owner exists)
-    if (profile.email && profile.email !== email) {
-      // Profile already claimed by another email — check if same email is re-registering
+    // If profile already has an email, the owner already exists — they should log in
+    if (profile.email) {
       return new Response(
-        JSON.stringify({ error: "Esta clave ya tiene un administrador asignado. Usa Login." }),
+        JSON.stringify({ error: "already_claimed" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create auth user with auto-confirm
+    // Profile has no email — truly first time. Create auth user.
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -67,10 +66,9 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
-      // If user already exists, return friendly message
       if (createError.message?.includes("already been registered")) {
         return new Response(
-          JSON.stringify({ error: "Este email ya está registrado. Usa Login." }),
+          JSON.stringify({ error: "email_taken" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -80,16 +78,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update the existing profile row to link to the new auth user
-    // The handle_new_user trigger will create a NEW profile row, so we need to:
-    // 1. Delete the trigger-created row
-    // 2. Update the original profile with the new user id
     const newUserId = newUser.user.id;
 
-    // Delete the auto-created profile from the trigger (if it was created)
+    // Delete the auto-created profile from the handle_new_user trigger
     await supabase.from("profiles").delete().eq("id", newUserId);
 
-    // Update the original profile to use the new auth user's ID and email
+    // Update the original profile to link to the new auth user
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ id: newUserId, email })
@@ -97,7 +91,7 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       return new Response(
-        JSON.stringify({ error: "Error al vincular la cuenta: " + updateError.message }),
+        JSON.stringify({ error: "link_failed", details: updateError.message }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
