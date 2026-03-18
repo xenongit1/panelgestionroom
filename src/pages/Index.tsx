@@ -19,27 +19,31 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const validate = useCallback(async (accessKey: string) => {
     setIsValidating(true);
-    setAccessState("loading");
+    setErrorMessage("");
     try {
       const { data, error } = await supabase.functions.invoke("validate-access-key", {
         body: { key: accessKey },
       });
 
       if (error || !data?.valid) {
-        setAccessState(data?.reason || "invalid");
+        const reason = data?.reason || "invalid";
+        setAccessState(reason);
+        if (reason === "invalid") {
+          setErrorMessage("Clave errónea. Por favor, contacta al soporte.");
+        }
         setIsValidating(false);
         return;
       }
 
+      // Valid — store profile and update URL
       setProfile(data.profile);
-      setAccessState("valid");
-
-      // Update URL with key so refresh works
       setSearchParams({ key: accessKey }, { replace: true });
 
+      // Fetch dashboard data before showing the dashboard
       const { data: dashboard, error: dashError } = await supabase.functions.invoke("dashboard-data", {
         body: { key: accessKey },
       });
@@ -47,8 +51,12 @@ const Dashboard = () => {
       if (!dashError && dashboard) {
         setDashboardData(dashboard);
       }
+
+      // Set valid AFTER data is loaded to avoid blank screen
+      setAccessState("valid");
     } catch {
       setAccessState("invalid");
+      setErrorMessage("Clave errónea. Por favor, contacta al soporte.");
     } finally {
       setIsValidating(false);
     }
@@ -60,7 +68,7 @@ const Dashboard = () => {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (accessState === "loading" && !isValidating) {
+  if (accessState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -77,6 +85,7 @@ const Dashboard = () => {
         reason={accessState as "invalid" | "expired" | "inactive"}
         onKeySubmit={validate}
         isValidating={isValidating}
+        errorMessage={errorMessage}
       />
     );
   }
