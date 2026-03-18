@@ -20,7 +20,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -29,6 +29,19 @@ export default function LoginPage() {
         setError("Email o contraseña incorrectos.");
         setLoading(false);
         return;
+      }
+
+      // Fetch profile to store access_key
+      const userId = signInData.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("access_key")
+          .eq("id", userId)
+          .maybeSingle();
+        if (profile?.access_key) {
+          localStorage.setItem("gr_access_key", profile.access_key);
+        }
       }
 
       localStorage.setItem("gr_panel_activated", "true");
