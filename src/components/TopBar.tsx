@@ -35,6 +35,11 @@ export function TopBar({ profile, onLogout }: TopBarProps) {
         <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Bell className="h-4 w-4" />
         </button>
+        {onLogout && (
+          <button onClick={onLogout} className="relative flex h-9 w-9 items-center justify-center rounded-lg border bg-card text-muted-foreground hover:text-destructive hover:bg-accent transition-colors" title="Cerrar sesión">
+            <LogOut className="h-4 w-4" />
+          </button>
+        )}
         <Avatar className="h-9 w-9">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
             {initials}
