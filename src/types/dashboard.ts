@@ -1,0 +1,65 @@
+export interface Profile {
+  id: string;
+  email: string | null;
+  company_name: string | null;
+  company_email: string | null;
+  company_phone: string | null;
+  country: string | null;
+  city: string | null;
+  access_key: string | null;
+  plan_status: string | null;
+  plan_type: string;
+  subscription_end: string | null;
+  panel_username: string | null;
+}
+
+export interface Sala {
+  id: string;
+  name: string;
+  theme: string | null;
+  difficulty: number;
+  capacity: number;
+  active: boolean;
+  profile_id: string;
+  created_at: string;
+}
+
+export interface GameMaster {
+  id: string;
+  name: string;
+  avatar: string | null;
+  available: boolean;
+  profile_id: string;
+  created_at: string;
+}
+
+export interface Reserva {
+  id: string;
+  client_name: string;
+  sala_id: string;
+  date: string;
+  time: string;
+  game_master_id: string | null;
+  status: string;
+  players: number;
+  profile_id: string;
+  created_at: string;
+  salas?: { name: string } | null;
+  game_masters?: { name: string } | null;
+}
+
+export interface KPIs {
+  totalReservations: number;
+  activeRooms: number;
+  totalRooms: number;
+  availableGameMasters: number;
+  totalGameMasters: number;
+}
+
+export interface DashboardData {
+  kpis: KPIs;
+  reservations: Reserva[];
+  todayReservations: Reserva[];
+  salas: Sala[];
+  gameMasters: GameMaster[];
+}

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { mockReservations } from "@/data/mockData";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { Reserva } from "@/types/dashboard";
 
 type StatusFilter = "todas" | "confirmada" | "pendiente" | "cancelada";
 
@@ -28,13 +28,17 @@ const filters: { label: string; value: StatusFilter }[] = [
   { label: "Canceladas", value: "cancelada" },
 ];
 
-export function ReservationsTable() {
+interface ReservationsTableProps {
+  reservations: Reserva[];
+}
+
+export function ReservationsTable({ reservations }: ReservationsTableProps) {
   const [filter, setFilter] = useState<StatusFilter>("todas");
 
   const filtered =
     filter === "todas"
-      ? mockReservations
-      : mockReservations.filter((r) => r.status === filter);
+      ? reservations
+      : reservations.filter((r) => r.status === filter);
 
   return (
     <Card className="border-border/50">
@@ -62,37 +66,43 @@ export function ReservationsTable() {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="pl-6">Cliente</TableHead>
-              <TableHead>Sala</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Hora</TableHead>
-              <TableHead>Game Master</TableHead>
-              <TableHead className="pr-6 text-right">Estado</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((r) => (
-              <TableRow
-                key={r.id}
-                className="cursor-pointer transition-colors duration-150 hover:bg-accent/50"
-              >
-                <TableCell className="pl-6 font-medium text-foreground">{r.client}</TableCell>
-                <TableCell className="text-muted-foreground">{r.room}</TableCell>
-                <TableCell className="text-muted-foreground">{r.date}</TableCell>
-                <TableCell className="text-muted-foreground">{r.time}</TableCell>
-                <TableCell className="text-muted-foreground">{r.gameMaster}</TableCell>
-                <TableCell className="pr-6 text-right">
-                  <Badge variant="secondary" className={cn("text-[11px] capitalize", statusStyles[r.status])}>
-                    {r.status}
-                  </Badge>
-                </TableCell>
+        {filtered.length === 0 ? (
+          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+            No hay reservas para mostrar
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-6">Cliente</TableHead>
+                <TableHead>Sala</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Hora</TableHead>
+                <TableHead>Game Master</TableHead>
+                <TableHead className="pr-6 text-right">Estado</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((r) => (
+                <TableRow
+                  key={r.id}
+                  className="cursor-pointer transition-colors duration-150 hover:bg-accent/50"
+                >
+                  <TableCell className="pl-6 font-medium text-foreground">{r.client_name}</TableCell>
+                  <TableCell className="text-muted-foreground">{r.salas?.name || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{r.date}</TableCell>
+                  <TableCell className="text-muted-foreground">{r.time}</TableCell>
+                  <TableCell className="text-muted-foreground">{r.game_masters?.name || "—"}</TableCell>
+                  <TableCell className="pr-6 text-right">
+                    <Badge variant="secondary" className={cn("text-[11px] capitalize", statusStyles[r.status])}>
+                      {r.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );

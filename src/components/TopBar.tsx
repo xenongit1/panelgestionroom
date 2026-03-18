@@ -1,15 +1,26 @@
 import { Search, Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { mockProfile } from "@/data/mockData";
+import type { Profile } from "@/types/dashboard";
 
-export function TopBar() {
+interface TopBarProps {
+  profile: Profile;
+}
+
+export function TopBar({ profile }: TopBarProps) {
+  const initials = (profile.company_name || profile.email || "GR")
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <div className="flex items-center justify-between gap-4 pb-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Bienvenido, {mockProfile.owner_name}
+          Bienvenido, {profile.panel_username || profile.company_name || "Usuario"}
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -22,13 +33,10 @@ export function TopBar() {
         </div>
         <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Bell className="h-4 w-4" />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-            3
-          </span>
         </button>
         <Avatar className="h-9 w-9">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-            AV
+            {initials}
           </AvatarFallback>
         </Avatar>
       </div>

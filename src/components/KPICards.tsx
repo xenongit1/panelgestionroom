@@ -1,47 +1,48 @@
 import { CalendarCheck, DoorOpen, UserPlus, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { kpiData } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import type { KPIs } from "@/types/dashboard";
 
-const kpis = [
-  {
-    title: "Reservas Totales",
-    subtitle: "Este mes",
-    value: kpiData.totalReservations,
-    trend: kpiData.totalReservationsTrend,
-    icon: CalendarCheck,
-    color: "text-primary bg-primary/10",
-  },
-  {
-    title: "Salas Activas",
-    subtitle: "En funcionamiento",
-    value: kpiData.activeRooms,
-    trend: null,
-    icon: DoorOpen,
-    color: "text-success bg-success/10",
-  },
-  {
-    title: "Clientes Nuevos",
-    subtitle: "Primera reserva",
-    value: kpiData.newClients,
-    trend: kpiData.newClientsTrend,
-    icon: UserPlus,
-    color: "text-warning bg-warning/10",
-  },
-  {
-    title: "Game Masters",
-    subtitle: "Disponibles hoy",
-    value: `${kpiData.availableGameMasters}/${kpiData.totalGameMasters}`,
-    trend: null,
-    icon: Users,
-    color: "text-[hsl(264,67%,60%)] bg-[hsl(264,67%,60%)]/10",
-  },
-];
+interface KPICardsProps {
+  kpis?: KPIs;
+}
 
-export function KPICards() {
+export function KPICards({ kpis }: KPICardsProps) {
+  const data = kpis || {
+    totalReservations: 0,
+    activeRooms: 0,
+    totalRooms: 0,
+    availableGameMasters: 0,
+    totalGameMasters: 0,
+  };
+
+  const cards = [
+    {
+      title: "Reservas Totales",
+      subtitle: "Últimas registradas",
+      value: data.totalReservations,
+      icon: CalendarCheck,
+      color: "text-primary bg-primary/10",
+    },
+    {
+      title: "Salas Activas",
+      subtitle: "En funcionamiento",
+      value: `${data.activeRooms}/${data.totalRooms}`,
+      icon: DoorOpen,
+      color: "text-success bg-success/10",
+    },
+    {
+      title: "Game Masters",
+      subtitle: "Disponibles hoy",
+      value: `${data.availableGameMasters}/${data.totalGameMasters}`,
+      icon: Users,
+      color: "text-warning bg-warning/10",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {kpis.map((kpi) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {cards.map((kpi) => (
         <Card
           key={kpi.title}
           className="hover:shadow-md transition-shadow duration-150 border-border/50"
@@ -57,25 +58,6 @@ export function KPICards() {
                 <kpi.icon className="h-5 w-5" />
               </div>
             </div>
-            {kpi.trend !== null && (
-              <div className="mt-3 flex items-center gap-1">
-                {kpi.trend > 0 ? (
-                  <TrendingUp className="h-3.5 w-3.5 text-success" />
-                ) : (
-                  <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-                )}
-                <span
-                  className={cn(
-                    "text-xs font-medium",
-                    kpi.trend > 0 ? "text-success" : "text-destructive"
-                  )}
-                >
-                  {kpi.trend > 0 ? "+" : ""}
-                  {kpi.trend}%
-                </span>
-                <span className="text-xs text-muted-foreground">vs mes anterior</span>
-              </div>
-            )}
           </CardContent>
         </Card>
       ))}
