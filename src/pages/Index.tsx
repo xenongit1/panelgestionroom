@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LeftSidebar } from "@/components/LeftSidebar";
@@ -12,50 +12,55 @@ import type { Profile, DashboardData } from "@/types/dashboard";
 type AccessState = "loading" | "valid" | "invalid" | "expired" | "inactive";
 
 const Dashboard = () => {
-  const [searchParams] = useSearchParams();
-  const accessKey = searchParams.get("key");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlKey = searchParams.get("key");
 
-  const [accessState, setAccessState] = useState<AccessState>("loading");
+  const [accessState, setAccessState] = useState<AccessState>(urlKey ? "loading" : "invalid");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+
+  const validate = useCallback(async (accessKey: string) => {
+    setIsValidating(true);
+    setAccessState("loading");
+    try {
+      const { data, error } = await supabase.functions.invoke("validate-access-key", {
+        body: { key: accessKey },
+      });
+
+      if (error || !data?.valid) {
+        setAccessState(data?.reason || "invalid");
+        setIsValidating(false);
+        return;
+      }
+
+      setProfile(data.profile);
+      setAccessState("valid");
+
+      // Update URL with key so refresh works
+      setSearchParams({ key: accessKey }, { replace: true });
+
+      const { data: dashboard, error: dashError } = await supabase.functions.invoke("dashboard-data", {
+        body: { key: accessKey },
+      });
+
+      if (!dashError && dashboard) {
+        setDashboardData(dashboard);
+      }
+    } catch {
+      setAccessState("invalid");
+    } finally {
+      setIsValidating(false);
+    }
+  }, [setSearchParams]);
 
   useEffect(() => {
-    if (!accessKey) {
-      setAccessState("invalid");
-      return;
+    if (urlKey) {
+      validate(urlKey);
     }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const validate = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("validate-access-key", {
-          body: { key: accessKey },
-        });
-
-        if (error || !data?.valid) {
-          setAccessState(data?.reason || "invalid");
-          return;
-        }
-
-        setProfile(data.profile);
-        setAccessState("valid");
-
-        // Fetch dashboard data
-        const { data: dashboard, error: dashError } = await supabase.functions.invoke("dashboard-data", {
-          body: { key: accessKey },
-        });
-
-        if (!dashError && dashboard) {
-          setDashboardData(dashboard);
-        }
-      } catch {
-        setAccessState("invalid");
-      }
-    };
-
-    validate();
-  }, [accessKey]);
-
-  if (accessState === "loading") {
+  if (accessState === "loading" && !isValidating) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -67,7 +72,13 @@ const Dashboard = () => {
   }
 
   if (accessState !== "valid" || !profile) {
-    return <AccessDenied reason={accessState as "invalid" | "expired" | "inactive"} />;
+    return (
+      <AccessDenied
+        reason={accessState as "invalid" | "expired" | "inactive"}
+        onKeySubmit={validate}
+        isValidating={isValidating}
+      />
+    );
   }
 
   return (
