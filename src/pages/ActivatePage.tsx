@@ -35,7 +35,15 @@ export default function ActivatePage() {
         body: { key: accessKey.trim() },
       });
 
-      if (fnError || !data?.valid) {
+      if (fnError) {
+        console.error("validate-access-key fnError:", fnError);
+        setError("Error de conexión. Inténtalo de nuevo.");
+        setLoading(false);
+        return;
+      }
+
+      if (!data?.valid) {
+        console.error("validate-access-key response:", data);
         const reason = data?.reason;
         if (reason === "expired") {
           setError("Tu suscripción ha expirado. Renuévala en gestionroom.com");
@@ -46,8 +54,8 @@ export default function ActivatePage() {
         return;
       }
 
-      setProfileId(data.profile.id);
-      setCompanyName(data.profile.company_name);
+      setProfileId(data.profile?.id || data.profile_id);
+      setCompanyName(data.profile?.company_name || null);
       localStorage.setItem("gr_access_key", accessKey.trim());
 
       if (data.has_owner) {

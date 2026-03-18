@@ -107,7 +107,7 @@ export function LeftSidebar({ profile }: LeftSidebarProps) {
               <p className="text-sm font-semibold text-sidebar-accent-foreground truncate">
                 {profile.company_name || "Mi Negocio"}
               </p>
-              <p className="text-xs text-sidebar-muted truncate">{profile.panel_username || profile.email}</p>
+              <p className="text-xs text-sidebar-muted truncate">{profile.email}</p>
             </div>
           </div>
 

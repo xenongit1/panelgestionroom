@@ -34,7 +34,15 @@ Deno.serve(async (req) => {
       .eq("access_key", key.trim())
       .maybeSingle();
 
-    if (error || !profile) {
+    if (error) {
+      console.error("Supabase query error:", { message: error.message, details: error.details, hint: error.hint, code: error.code });
+      return new Response(
+        JSON.stringify({ valid: false, reason: "query_error" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!profile) {
       return new Response(
         JSON.stringify({ valid: false, reason: "invalid" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
