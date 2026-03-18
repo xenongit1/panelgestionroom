@@ -94,6 +94,7 @@ export default function ActivatePage() {
           profileId,
           username: username.trim(),
           password,
+          accessKey: accessKey.trim(),
         },
       });
 
@@ -111,6 +112,12 @@ export default function ActivatePage() {
 
       if (data?.error === "username_taken") {
         setError("Este nombre de usuario ya está en uso.");
+        setLoading(false);
+        return;
+      }
+
+      if (data?.error === "unauthorized") {
+        setError("No autorizado. Verifica tu clave de acceso e inténtalo de nuevo.");
         setLoading(false);
         return;
       }
