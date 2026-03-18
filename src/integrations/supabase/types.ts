@@ -70,6 +70,36 @@ export type Database = {
           },
         ]
       }
+      pending_requests: {
+        Row: {
+          company: string
+          created_at: string
+          id: string
+          name: string
+          reason: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          id?: string
+          name: string
+          reason?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          id?: string
+          name?: string
+          reason?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           access_key: string | null

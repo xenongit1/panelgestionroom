@@ -40,8 +40,8 @@ export function AccessDenied({ reason, onKeySubmit, isValidating, errorMessage }
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md border-border/50">
         <CardContent className="flex flex-col items-center p-8 text-center space-y-6">
-          <div className="flex flex-col items-center gap-1">
-            <GestionRoomLogo variant="dark" />
+          <div className="flex flex-col items-center gap-2">
+            <GestionRoomLogo variant="dark" size="lg" />
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
           <form onSubmit={handleSubmit} className="w-full space-y-2">
