@@ -20,7 +20,7 @@ export function AccessDenied({ reason, onKeySubmit, isValidating, errorMessage }
       description: "Introduce tu clave secreta para acceder al panel de gestión.",
     },
     expired: {
-      description: "Tu plan ha expirado. Renueva tu suscripción o introduce otra clave.",
+      description: "Tu suscripción ha expirado. Por favor, renuévala en gestionroom.com",
     },
     inactive: {
       description: "Tu cuenta está inactiva. Contacta con soporte o introduce otra clave.",
@@ -61,7 +61,7 @@ export function AccessDenied({ reason, onKeySubmit, isValidating, errorMessage }
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  Entrar
+                  Entrar al Panel
                   <ArrowRight className="h-4 w-4 ml-1.5" />
                 </>
               )}
