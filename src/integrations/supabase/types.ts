@@ -81,6 +81,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          owner_name: string | null
           panel_password: string | null
           panel_username: string | null
           plan_status: string | null
@@ -100,6 +101,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id: string
+          owner_name?: string | null
           panel_password?: string | null
           panel_username?: string | null
           plan_status?: string | null
@@ -119,6 +121,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          owner_name?: string | null
           panel_password?: string | null
           panel_username?: string | null
           plan_status?: string | null
@@ -268,6 +271,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          owner_name: string | null
           panel_password: string | null
           panel_username: string | null
           plan_status: string | null

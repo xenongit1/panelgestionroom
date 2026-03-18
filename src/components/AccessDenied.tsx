@@ -46,7 +46,7 @@ export function AccessDenied({ reason, onKeySubmit, isValidating }: AccessDenied
             <KeyRound className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-2">
-            <GestionRoomLogo />
+            <GestionRoomLogo variant="dark" />
           </div>
           <div className="space-y-2">
             <h1 className="text-xl font-bold text-foreground">{title}</h1>
