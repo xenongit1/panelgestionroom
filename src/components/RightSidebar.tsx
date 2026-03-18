@@ -1,8 +1,12 @@
-import { todayReservations, mockGameMasters } from "@/data/mockData";
 import { Badge } from "@/components/ui/badge";
 import { Clock, DoorOpen, User, Zap } from "lucide-react";
+import type { Reserva } from "@/types/dashboard";
 
-export function RightSidebar() {
+interface RightSidebarProps {
+  todayReservations: Reserva[];
+}
+
+export function RightSidebar({ todayReservations }: RightSidebarProps) {
   return (
     <aside className="hidden xl:flex w-[300px] shrink-0 flex-col border-l bg-card p-5 space-y-6 overflow-y-auto">
       {/* Integraciones */}
@@ -12,8 +16,8 @@ export function RightSidebar() {
         </h3>
         <div className="space-y-2">
           <div className="flex items-center gap-3 rounded-lg border p-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[hsl(264,67%,60%)]">
-              <Zap className="h-4 w-4 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
+              <Zap className="h-4 w-4 text-primary-foreground" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Stripe</p>
@@ -31,19 +35,18 @@ export function RightSidebar() {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Próximas Reservas — Hoy
         </h3>
-        <div className="space-y-1">
-          {todayReservations.map((res, i) => {
-            const gm = mockGameMasters.find((g) => g.name === res.gameMaster);
-            return (
+        {todayReservations.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">Sin reservas para hoy</p>
+        ) : (
+          <div className="space-y-1">
+            {todayReservations.map((res, i) => (
               <div
                 key={res.id}
                 className="relative flex gap-3 rounded-lg p-3 hover:bg-accent/50 transition-colors group"
               >
-                {/* Timeline line */}
                 {i < todayReservations.length - 1 && (
                   <div className="absolute left-[23px] top-[38px] bottom-[-4px] w-px bg-border" />
                 )}
-                {/* Time dot */}
                 <div className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
                   <div className="h-2 w-2 rounded-full bg-primary" />
                 </div>
@@ -65,21 +68,21 @@ export function RightSidebar() {
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <DoorOpen className="h-3 w-3" />
-                    <span className="truncate">{res.room}</span>
+                    <span className="truncate">{res.salas?.name || "—"}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <User className="h-3 w-3" />
-                    <span>{res.gameMaster}</span>
+                    <span>{res.game_masters?.name || "—"}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    <span>{res.players} jugadores — {res.client}</span>
+                    <span>{res.players} jugadores — {res.client_name}</span>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </aside>
   );
