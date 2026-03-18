@@ -139,7 +139,8 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ error: "invalid_action" }, 400);
   } catch (err) {
-    return jsonResponse({ error: String(err) }, 500);
+    console.error("panel-auth error:", err);
+    return jsonResponse({ error: "Ha ocurrido un error en el servidor" }, 500);
   }
 });
 

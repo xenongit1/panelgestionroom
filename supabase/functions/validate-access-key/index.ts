@@ -78,8 +78,9 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    console.error("validate-access-key error:", err);
     return new Response(
-      JSON.stringify({ valid: false, reason: "invalid", error: String(err) }),
+      JSON.stringify({ valid: false, reason: "server_error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
