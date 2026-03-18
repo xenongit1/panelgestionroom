@@ -22,14 +22,27 @@ Deno.serve(async (req) => {
     );
 
     if (action === "register") {
-      const { profileId, username, password } = body;
+      const { profileId, username, password, accessKey } = body;
 
-      if (!profileId || !username || !password) {
+      if (!profileId || !username || !password || !accessKey) {
         return jsonResponse({ error: "missing_fields" }, 400);
       }
 
       if (password.length < 6) {
         return jsonResponse({ error: "password_too_short" });
+      }
+
+      // Verify access_key belongs to profileId and has valid plan
+      const { data: verifiedProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", profileId)
+        .eq("access_key", accessKey)
+        .in("plan_status", ["pro", "anual", "active"])
+        .maybeSingle();
+
+      if (!verifiedProfile) {
+        return jsonResponse({ error: "unauthorized" }, 401);
       }
 
       // Check if an owner already exists for this profile

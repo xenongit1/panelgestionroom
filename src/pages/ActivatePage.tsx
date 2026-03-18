@@ -94,6 +94,7 @@ export default function ActivatePage() {
           profileId,
           username: username.trim(),
           password,
+          accessKey: accessKey.trim(),
         },
       });
 
