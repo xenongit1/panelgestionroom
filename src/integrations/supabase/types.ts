@@ -301,6 +301,110 @@ export type Database = {
           },
         ]
       }
+      reservations: {
+        Row: {
+          booking_date: string
+          booking_time: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          profile_id: string
+          room_id: string
+          status: string | null
+          total_price: number | null
+        }
+        Insert: {
+          booking_date: string
+          booking_time: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          profile_id: string
+          room_id: string
+          status?: string | null
+          total_price?: number | null
+        }
+        Update: {
+          booking_date?: string
+          booking_time?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          profile_id?: string
+          room_id?: string
+          status?: string | null
+          total_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          capacity_max: number | null
+          capacity_min: number | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          image_url: string | null
+          name: string
+          price_per_person: number | null
+          profile_id: string
+        }
+        Insert: {
+          capacity_max?: number | null
+          capacity_min?: number | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price_per_person?: number | null
+          profile_id: string
+        }
+        Update: {
+          capacity_max?: number | null
+          capacity_min?: number | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price_per_person?: number | null
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salas: {
         Row: {
           active: boolean | null
