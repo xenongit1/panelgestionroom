@@ -30,8 +30,8 @@ Deno.serve(async (req) => {
 
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("id, email, company_name, company_email, company_phone, country, city, access_key, plan_status, plan_type, subscription_end, panel_username")
-      .eq("access_key", key)
+      .select("id, email, company_name, company_email, company_phone, country, city, access_key, plan_status, plan_type, subscription_end")
+      .eq("access_key", key.trim())
       .maybeSingle();
 
     if (error || !profile) {
