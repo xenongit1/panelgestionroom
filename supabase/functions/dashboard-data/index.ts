@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     const profileId = profile.id;
 
     // Fetch all data in parallel
-    const [salasRes, gmsRes, reservasRes, todayReservasRes] = await Promise.all([
+    const [salasRes, gmsRes, reservasRes, todayReservasRes, totalReservasRes] = await Promise.all([
       supabase.from("salas").select("*").eq("profile_id", profileId),
       supabase.from("game_masters").select("*").eq("profile_id", profileId),
       supabase
@@ -59,6 +59,10 @@ Deno.serve(async (req) => {
         .eq("profile_id", profileId)
         .eq("date", new Date().toISOString().split("T")[0])
         .order("time", { ascending: true }),
+      supabase
+        .from("reservas")
+        .select("*", { count: "exact", head: true })
+        .eq("profile_id", profileId),
     ]);
 
     const salas = salasRes.data || [];
@@ -67,7 +71,7 @@ Deno.serve(async (req) => {
     const todayReservations = todayReservasRes.data || [];
 
     const kpis = {
-      totalReservations: reservasRes.data?.length || 0,
+      totalReservations: totalReservasRes.count || 0,
       activeRooms: salas.filter((s: any) => s.active).length,
       totalRooms: salas.length,
       availableGameMasters: gameMasters.filter((gm: any) => gm.available).length,

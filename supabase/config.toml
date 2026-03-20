@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.panel-auth]
 verify_jwt = false
+
+[functions.panel-crud]
+verify_jwt = false
