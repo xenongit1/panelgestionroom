@@ -189,6 +189,61 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "change_password") {
+      const username = sanitizeUsername(body.username || "");
+      const { accessKey, currentPassword, newPassword } = body;
+
+      if (!username || !accessKey || !currentPassword || !newPassword) {
+        return jsonResponse({ error: "missing_fields" }, 400);
+      }
+
+      if (!validatePassword(currentPassword) || !validatePassword(newPassword)) {
+        return jsonResponse({ error: "invalid_credentials" });
+      }
+
+      // Validate access key
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("access_key", accessKey)
+        .in("plan_status", ["pro", "anual", "active"])
+        .maybeSingle();
+
+      if (!profile) {
+        return jsonResponse({ error: "unauthorized" }, 401);
+      }
+
+      // Get user
+      const { data: user } = await supabase
+        .from("panel_users")
+        .select("id, password_hash")
+        .eq("username", username)
+        .eq("profile_id", profile.id)
+        .maybeSingle();
+
+      if (!user) {
+        return jsonResponse({ error: "invalid_credentials" });
+      }
+
+      const valid = bcrypt.compareSync(currentPassword, user.password_hash);
+      if (!valid) {
+        return jsonResponse({ error: "invalid_credentials" });
+      }
+
+      const newHash = bcrypt.hashSync(newPassword, 10);
+      const { error: updateError } = await supabase
+        .from("panel_users")
+        .update({ password_hash: newHash })
+        .eq("id", user.id);
+
+      if (updateError) {
+        console.error("panel-auth change_password error:", updateError);
+        return jsonResponse({ error: "Error de autenticación" }, 500);
+      }
+
+      return jsonResponse({ success: true });
+    }
+
     return jsonResponse({ error: "invalid_action" }, 400);
   } catch (err) {
     console.error("panel-auth error:", err);
