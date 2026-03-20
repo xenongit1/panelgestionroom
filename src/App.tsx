@@ -7,6 +7,10 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ActivatePage from "./pages/ActivatePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
+import SalasPage from "./pages/SalasPage.tsx";
+import ReservasPage from "./pages/ReservasPage.tsx";
+import GameMastersPage from "./pages/GameMastersPage.tsx";
+import AjustesPage from "./pages/AjustesPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +24,10 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/activate" element={<ActivatePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/salas" element={<SalasPage />} />
+          <Route path="/reservas" element={<ReservasPage />} />
+          <Route path="/game-masters" element={<GameMastersPage />} />
+          <Route path="/ajustes" element={<AjustesPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

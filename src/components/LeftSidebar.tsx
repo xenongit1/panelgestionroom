@@ -6,17 +6,14 @@ import {
   DoorOpen,
   Users,
   Settings,
-  Eye,
-  EyeOff,
-  Copy,
   CreditCard,
   ChevronLeft,
+  ExternalLink,
 } from "lucide-react";
 import { GestionRoomLogo } from "./GestionRoomLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { Profile } from "@/types/dashboard";
 
 const navItems = [
   { title: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -27,30 +24,21 @@ const navItems = [
 ];
 
 interface LeftSidebarProps {
-  profile: Profile;
+  username: string;
+  companyName: string | null;
 }
 
-export function LeftSidebar({ profile }: LeftSidebarProps) {
+export function LeftSidebar({ username, companyName }: LeftSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const [showKey, setShowKey] = useState(false);
-  const [copied, setCopied] = useState(false);
 
-  const initials = (profile.company_name || profile.email || "GR")
+  const initials = (companyName || username || "GR")
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
-  const copyKey = () => {
-    if (profile.access_key) {
-      navigator.clipboard.writeText(profile.access_key);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   return (
     <aside
@@ -105,52 +93,20 @@ export function LeftSidebar({ profile }: LeftSidebarProps) {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-sidebar-accent-foreground truncate">
-                {profile.company_name || "Mi Negocio"}
+                {companyName || "Mi Negocio"}
               </p>
-              <p className="text-xs text-sidebar-muted truncate">{profile.email}</p>
+              <p className="text-xs text-sidebar-muted truncate">@{username}</p>
             </div>
           </div>
-
-          {/* Access Key */}
-          {profile.access_key && (
-            <div className="rounded-md bg-sidebar-accent/50 p-2.5 space-y-1.5">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-sidebar-muted">
-                Clave de Acceso
-              </p>
-              <div className="flex items-center gap-1.5">
-                <code
-                  className={cn(
-                    "flex-1 text-xs font-mono text-sidebar-accent-foreground transition-all",
-                    !showKey && "blur-md select-none"
-                  )}
-                >
-                  {profile.access_key}
-                </code>
-                <button
-                  onClick={() => setShowKey(!showKey)}
-                  className="p-1 rounded hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors"
-                >
-                  {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                </button>
-                <button
-                  onClick={copyKey}
-                  className="p-1 rounded hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-accent-foreground transition-colors"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              {copied && (
-                <p className="text-[10px] text-sidebar-primary animate-in fade-in">¡Copiada!</p>
-              )}
-            </div>
-          )}
 
           <Button
             size="sm"
             className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-sidebar-primary-foreground text-xs"
+            onClick={() => window.open("https://gestionroom.com/precios", "_blank")}
           >
             <CreditCard className="h-3.5 w-3.5 mr-1.5" />
             Gestionar Suscripción
+            <ExternalLink className="h-3 w-3 ml-1" />
           </Button>
         </div>
       )}

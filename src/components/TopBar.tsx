@@ -5,10 +5,11 @@ import type { Profile } from "@/types/dashboard";
 
 interface TopBarProps {
   profile: Profile;
+  title?: string;
   onLogout?: () => void;
 }
 
-export function TopBar({ profile, onLogout }: TopBarProps) {
+export function TopBar({ profile, title = "Dashboard", onLogout }: TopBarProps) {
   const initials = (profile.company_name || profile.email || "GR")
     .split(" ")
     .map((w) => w[0])
@@ -19,7 +20,7 @@ export function TopBar({ profile, onLogout }: TopBarProps) {
   return (
     <div className="flex items-center justify-between gap-4 pb-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">{title}</h1>
         <p className="text-sm text-muted-foreground">
           Bienvenido, {profile.company_name || "Usuario"}
         </p>
