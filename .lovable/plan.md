@@ -1,42 +1,31 @@
 
 
-## Plan: Monochrome Premium Palette & Grid Background
+## Plan: Sidebar Redesign — High-Fidelity Polish
 
-### What changes
+### Changes to `src/components/LeftSidebar.tsx`
 
-**File: `src/index.css`**
+**Header:**
+- Replace `GestionRoomLogo` with inline logo: `LayoutDashboard` icon (black, `strokeWidth={1.5}`) + "GestionRoom" text
+- Replace `PanelLeftClose`/`PanelLeft` toggle with `ChevronLeft`/`ChevronRight` inside a small bordered button (`border border-border rounded-md h-7 w-7`)
 
-1. **`:root` variables** — Replace all blue-tinted HSL values with pure monochrome (hue `0`, saturation `0%`):
-   - `--foreground: 0 0% 3.9%`
-   - `--card-foreground: 0 0% 3.9%`
-   - `--popover-foreground: 0 0% 3.9%`
-   - `--primary: 0 0% 9%` (deep black for buttons)
-   - `--primary-foreground: 0 0% 98%`
-   - `--secondary: 0 0% 96%`
-   - `--secondary-foreground: 0 0% 10%`
-   - `--muted: 0 0% 96%`
-   - `--muted-foreground: 0 0% 46%`
-   - `--accent: 0 0% 96%`
-   - `--accent-foreground: 0 0% 10%`
-   - `--border: 0 0% 92%`
-   - `--input: 0 0% 92%`
-   - `--ring: 0 0% 9%`
-   - `--radius: 0.8rem`
-   - Sidebar vars: `--sidebar-foreground: 0 0% 26%`, `--sidebar-border: 0 0% 92%`
+**Navigation icons:**
+- Add `strokeWidth={1.5}` to all nav icons for a thinner, premium look
 
-2. **`.dark` variables** — Same monochrome treatment:
-   - `--background: 0 0% 3.9%`
-   - `--foreground: 0 0% 98%`
-   - `--card: 0 0% 5%`
-   - `--card-foreground: 0 0% 98%`
-   - `--primary: 0 0% 98%` (inverted for dark)
-   - `--primary-foreground: 0 0% 9%`
-   - `--border: 0 0% 16%`
-   - `--sidebar-background: 0 0% 2%`
+**Sidebar container styling:**
+- Background: `bg-[#F9FAFB]` (light mode), keep dark mode via CSS vars
+- Border: `border-r border-[#F0F0F0]` — remove any shadow classes
+- Remove `bg-sidebar` class, use explicit hex colors
 
-3. **Body grid pattern** — Add a subtle 20×20px grid background via `background-image` using `linear-gradient` lines in `#f0f0f0`, disabled in dark mode.
+**User footer:**
+- Already has avatar + name + email + MoreVertical — add `strokeWidth={1.5}` to MoreVertical
+- Wire the MoreVertical button to a `DropdownMenu` with "Ajustes" (navigates to `/ajustes`) and "Cerrar sesión" options
 
-4. Remove the "Azul Premium" comment and any blue references.
+**Unlock card:**
+- Keep as-is, add `strokeWidth={1.5}` to icons inside it
 
-No other files affected — the theme presets in `ThemeContext` override `--primary` independently so they still work.
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/components/LeftSidebar.tsx` | Header logo swap, ChevronLeft toggle, strokeWidth 1.5 on all icons, explicit bg color, DropdownMenu on kebab |
 
