@@ -1,109 +1,94 @@
 
 
-## Plan: Premium UI Overhaul with Theme Customizer
+## Plan: High-Fidelity UI Correction to Match Reference Designs
 
-Redesign the entire dashboard UI to match the reference images — a polished SaaS-style panel with a theme customizer popover, refined sidebar, enhanced top bar, and dark mode support.
-
----
-
-### 1. Theme System — Context & CSS Variables
-
-**New file: `src/contexts/ThemeContext.tsx`**
-- React context managing: `preset`, `scale`, `radius`, `colorMode`, `contentLayout`, `sidebarMode`
-- Persists settings to `localStorage` under `gr_theme`
-- On preset change, applies a CSS class (e.g., `theme-underground`) to `<html>` that overrides `--primary` and `--ring` HSL values
-- On `colorMode` change, toggles `dark` class on `<html>`
-- On `scale` change, sets a CSS variable `--ui-scale` (0.875 for XS, 1.125 for LG, 1 for default) applied to `font-size` on `<html>`
-- On `radius` change, updates `--radius` (0 for none, 0.25rem SM, 0.5rem MD, 0.75rem LG, 1rem XL)
-- Exposes `resetTheme()` to restore defaults
-
-**Modify: `src/index.css`**
-- Add 8 theme preset classes (`:root.theme-underground`, etc.) each overriding `--primary`, `--primary-foreground`, `--ring`, `--sidebar-primary` with the corresponding color
-- Presets: Default (blue), Underground (green #22c55e), Rose Garden (pink #f43f5e), Lake View (cyan #06b6d4), Sunset Glow (orange #f97316), Forest Whisper (emerald #10b981), Ocean Breeze (blue #3b82f6), Lavender Dream (violet #8b5cf6)
-
-**Modify: `src/App.tsx`**
-- Wrap everything in `<ThemeProvider>`
+Align the dashboard interface pixel-perfectly with the Shadcn UI Kit reference images, adapting all content to GestionRoom branding and data.
 
 ---
 
-### 2. Theme Customizer Popover
+### 1. Sidebar Overhaul (`src/components/LeftSidebar.tsx`)
 
-**New file: `src/components/ThemeCustomizer.tsx`**
-- Triggered by a gear/palette icon in the TopBar
-- Uses `Popover` from shadcn
-- Sections matching the reference image exactly:
-  - **Theme preset**: `Select` dropdown with colored dots + preset names
-  - **Scale**: Segmented toggle (None / XS / LG)
-  - **Radius**: Segmented toggle (None / SM / MD / LG / XL)
-  - **Color mode**: Light / Dark toggle
-  - **Content layout**: Full / Centered toggle
-  - **Sidebar mode**: Default / Icon toggle
-  - **Reset to Default** button at bottom
-- All controls read/write from ThemeContext
+**Header section:**
+- Replace plain logo with GestionRoom branding + a `PanelLeftClose` icon button on the right side for toggling sidebar collapse (calls `setSidebarMode` from ThemeContext)
+- Logo should use `dark:invert` to be black in light mode, white in dark mode
 
----
+**Navigation groups:**
+- Keep current structure (Principal, Gestion, Sistema) but style nav items to match reference: lighter font weight, rounded-md hover backgrounds, left border or bg highlight for active state
+- "New" badge on Reservas stays with soft green pill styling matching reference exactly
 
-### 3. Sidebar Redesign
+**Unlock Everything card:**
+- Restyle to match reference: subtle background (not gradient-heavy), clean title "Unlock Everything", description text, and a green "Get Full Access" button with a checkmark/sparkle icon and subtle glow effect
 
-**Modify: `src/components/LeftSidebar.tsx`**
-- White/light background in light mode (not dark navy) — matches reference
-- Cleaner nav items with subtle hover states and active indicator
-- Add category labels/groups (e.g., "Principal", "Gestión")
-- Add badges: "New" in soft green for newer sections
-- Bottom section: "Unlock Everything" card with subtle gradient background, description text, and "Get Full Access" button (links to pricing page)
-- User info card at very bottom with avatar, name, email
-- Respond to `sidebarMode` from ThemeContext — collapse to icon-only when set to "Icon"
-- Use light sidebar colors: white bg, gray text, primary accent for active
-
-**Modify: `src/index.css`**
-- Update sidebar CSS variables for light mode: white background, dark text
+**User footer:**
+- Show: circular avatar with initials, full name ("Pedro Garcia" or from session data), email below, and a vertical kebab (three dots / `MoreVertical` icon) on the right
+- Remove `@username` format, show real name and email from profile/session
 
 ---
 
-### 4. Top Bar Enhancement
+### 2. TopBar Cleanup (`src/components/TopBar.tsx`)
 
-**Modify: `src/components/TopBar.tsx`**
-- Search input with `⌘ K` keyboard shortcut badge inside the input (visual only)
-- Notification bell with red dot indicator
-- Dark mode toggle button (moon/sun icon) — calls ThemeContext
-- Theme customizer trigger (palette icon) — opens the popover
-- User avatar dropdown (using `DropdownMenu` from shadcn) with items: Account, Billing, Notifications, Log out
-- Remove the current title/subtitle — move to a simpler layout matching reference
+- Keep the sidebar toggle icon (matching the `PanelLeftClose` from reference) as the first element, followed by the search bar
+- Search bar: wider, with `⌘ K` badge - keep current implementation, just ensure sizing matches
+- Right side: notification bell (with red dot), dark mode toggle (moon/sun), theme customizer (paintbrush), user avatar dropdown - all already implemented, minor spacing adjustments
+- Remove the `h1` title from the top bar (the page title should not appear here per the reference)
 
 ---
 
-### 5. Content Layout Support
+### 3. Dashboard Content (`src/pages/Index.tsx`)
 
-**Modify: `src/components/DashboardLayout.tsx`**
-- Read `contentLayout` from ThemeContext
-- When "Centered", wrap main content in `max-w-6xl mx-auto`
-- When "Full", use full width (current behavior)
-- Read `sidebarMode` and pass to LeftSidebar
+- Remove any calendar component if present
+- Keep current structure: KPICards + ReservationsTable + RightSidebar
+- This is already correct based on the code review
 
 ---
 
-### 6. Dark Mode CSS
+### 4. KPI Cards Polish (`src/components/KPICards.tsx`)
 
-**Modify: `src/index.css`**
-- Refine `.dark` variables for a deep charcoal look (not pure black):
-  - `--background: 224 10% 10%` (charcoal)
-  - `--card: 224 10% 12%`
-  - Cards, sidebar, and popover get subtle contrast differences
-- Sidebar in dark mode: very dark background with lighter text
+- Minor styling refinements: ensure `rounded-xl` on cards, proper icon container sizing (40x40 with rounded-lg), consistent spacing
+- Already mostly correct - just ensure border radius follows theme system
 
 ---
 
-### Files Summary
+### 5. Reservations Table Polish (`src/components/ReservationsTable.tsx`)
 
-| Action | File |
-|--------|------|
-| Create | `src/contexts/ThemeContext.tsx` |
-| Create | `src/components/ThemeCustomizer.tsx` |
-| Modify | `src/index.css` — theme presets, dark mode refinement, sidebar light colors |
-| Modify | `src/App.tsx` — wrap in ThemeProvider |
-| Modify | `src/components/LeftSidebar.tsx` — light sidebar, categories, badges, unlock card, collapse support |
-| Modify | `src/components/TopBar.tsx` — search with ⌘K, notifications dot, dark toggle, customizer trigger, user dropdown |
-| Modify | `src/components/DashboardLayout.tsx` — content layout and sidebar mode support |
+- Empty state: make "reservas" bold/highlighted in "No hay reservas para mostrar" 
+- Ensure filter buttons match reference pill style
+- Already mostly correct
 
-No backend or database changes required.
+---
+
+### 6. Right Sidebar Polish (`src/components/RightSidebar.tsx`)
+
+- Already has Integraciones (Stripe) and Proximas Reservas sections
+- Minor spacing/typography adjustments to match reference
+
+---
+
+### 7. DashboardLayout Adjustments (`src/components/DashboardLayout.tsx`)
+
+- Move the sidebar toggle trigger to TopBar instead of sidebar header
+- Ensure the layout properly handles the sidebar collapse with the panel icon
+
+---
+
+### 8. GestionRoomLogo Update (`src/components/GestionRoomLogo.tsx`)
+
+- In light mode: logo should appear dark (black) - currently uses `invert` for dark variant
+- Fix: in sidebar (light bg), the white logo needs `invert` class by default; remove invert in dark mode
+- The logo import is `gestionroom-logo-white.png`, so in light sidebar it needs inverting to appear dark
+
+---
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/components/LeftSidebar.tsx` | Header with collapse icon, restyled nav, unlock card, user footer with name/email/kebab |
+| `src/components/TopBar.tsx` | Remove h1 title, add sidebar toggle icon, adjust spacing |
+| `src/components/DashboardLayout.tsx` | Pass sidebar toggle handler to TopBar |
+| `src/components/GestionRoomLogo.tsx` | Fix light/dark mode logo color logic |
+| `src/components/ReservationsTable.tsx` | Bold "reservas" in empty state text |
+| `src/components/KPICards.tsx` | Ensure rounded-xl cards |
+
+No backend changes required.
 
