@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* 1. Importamos Geist: La fuente que da el look Premium */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,173 +7,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 224 10% 10%;
+    /* 2. Colores más limpios y vibrantes */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 10% 10%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 10% 10%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
+    /* Azul Premium */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 10% 10%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 224 10% 10%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Bordes mucho más finos y sutiles */
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    /* Radio de esquina más moderno */
+    --radius: 0.75rem;
 
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 224 10% 10%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 224 10% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
-    --sidebar-muted: 220 9% 46%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    /* Sidebar con fondo ligeramente gris para contraste (como en tu foto) */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-border: 240 5.9% 90%;
   }
 
   .dark {
-    --background: 224 10% 10%;
-    --foreground: 220 14% 96%;
-
-    --card: 224 10% 13%;
-    --card-foreground: 220 14% 96%;
-
-    --popover: 224 10% 13%;
-    --popover-foreground: 220 14% 96%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 224 10% 17%;
-    --secondary-foreground: 220 14% 96%;
-
-    --muted: 224 10% 17%;
-    --muted-foreground: 220 9% 60%;
-
-    --accent: 224 10% 17%;
-    --accent-foreground: 220 14% 96%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 220 14% 96%;
-
-    --border: 224 10% 19%;
-    --input: 224 10% 19%;
-    --ring: 217 91% 60%;
-
-    --sidebar-background: 224 10% 8%;
-    --sidebar-foreground: 220 14% 90%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 10% 14%;
-    --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 224 10% 16%;
-    --sidebar-ring: 217 91% 60%;
-    --sidebar-muted: 220 9% 50%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-  }
-
-  /* Theme Presets */
-  :root.theme-underground {
-    --primary: 142 71% 45%;
-    --ring: 142 71% 45%;
-    --sidebar-primary: 142 71% 45%;
-  }
-  :root.theme-underground.dark {
-    --primary: 142 71% 45%;
-    --ring: 142 71% 45%;
-    --sidebar-primary: 142 71% 45%;
-  }
-
-  :root.theme-rose-garden {
-    --primary: 347 77% 50%;
-    --ring: 347 77% 50%;
-    --sidebar-primary: 347 77% 50%;
-  }
-  :root.theme-rose-garden.dark {
-    --primary: 347 77% 50%;
-    --ring: 347 77% 50%;
-    --sidebar-primary: 347 77% 50%;
-  }
-
-  :root.theme-lake-view {
-    --primary: 192 91% 36%;
-    --ring: 192 91% 36%;
-    --sidebar-primary: 192 91% 36%;
-  }
-  :root.theme-lake-view.dark {
-    --primary: 192 91% 36%;
-    --ring: 192 91% 36%;
-    --sidebar-primary: 192 91% 36%;
-  }
-
-  :root.theme-sunset-glow {
-    --primary: 25 95% 53%;
-    --ring: 25 95% 53%;
-    --sidebar-primary: 25 95% 53%;
-  }
-  :root.theme-sunset-glow.dark {
-    --primary: 25 95% 53%;
-    --ring: 25 95% 53%;
-    --sidebar-primary: 25 95% 53%;
-  }
-
-  :root.theme-forest-whisper {
-    --primary: 160 84% 39%;
-    --ring: 160 84% 39%;
-    --sidebar-primary: 160 84% 39%;
-  }
-  :root.theme-forest-whisper.dark {
-    --primary: 160 84% 39%;
-    --ring: 160 84% 39%;
-    --sidebar-primary: 160 84% 39%;
-  }
-
-  :root.theme-ocean-breeze {
-    --primary: 217 91% 60%;
-    --ring: 217 91% 60%;
-    --sidebar-primary: 217 91% 60%;
-  }
-  :root.theme-ocean-breeze.dark {
-    --primary: 217 91% 60%;
-    --ring: 217 91% 60%;
-    --sidebar-primary: 217 91% 60%;
-  }
-
-  :root.theme-lavender-dream {
-    --primary: 258 90% 66%;
-    --ring: 258 90% 66%;
-    --sidebar-primary: 258 90% 66%;
-  }
-  :root.theme-lavender-dream.dark {
-    --primary: 258 90% 66%;
-    --ring: 258 90% 66%;
-    --sidebar-primary: 258 90% 66%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --sidebar-background: 240 10% 2%;
   }
 }
 
@@ -182,22 +60,42 @@
   }
 
   body {
+    /* 3. Forzamos la fuente y el suavizado de renderizado */
+    font-family: "Geist", sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-osx-font-smoothing: grayscale;
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
   }
+
+  /* 4. Mejoramos el espaciado global de las tablas y contenedores */
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+}
+
+/* 5. Clases de utilidad para el layout "Centered" */
+.layout-centered {
+  @apply max-w-6xl mx-auto px-6 w-full;
+}
+
+.layout-full {
+  @apply w-full px-8;
+}
+
+/* 6. Animación de entrada suave */
+.animate-in {
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
 }
