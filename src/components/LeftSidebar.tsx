@@ -95,7 +95,7 @@ export function LeftSidebar({ username, companyName }: LeftSidebarProps) {
                     <span className="flex-1 text-left">{item.title}</span>
                   )}
                   {!collapsed && item.badge && (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success dark:bg-success/20 dark:text-success">
                       {item.badge}
                     </span>
                   )}
