@@ -1,108 +1,109 @@
 
 
-## Plan: Convert static panel to functional CRUD dashboard
+## Plan: Premium UI Overhaul with Theme Customizer
 
-This is a large scope request. I'll break it into manageable phases covering all 5 areas.
-
----
-
-### 1. Sidebar cleanup — Show username, remove sensitive data
-
-**File: `src/components/LeftSidebar.tsx`**
-- Remove the access key display section (Eye/Copy buttons, blurred code)
-- Remove email display
-- Show `username` from `gr_session` (parsed from localStorage) instead
-- Change "Gestionar Suscripción" button to link to `https://gestionroom.com/precios` (external)
-
-**File: `src/pages/Index.tsx`**
-- Parse `gr_session` to extract `username` and pass it to LeftSidebar
-- Update `LeftSidebar` props to accept `username` instead of full `Profile`
+Redesign the entire dashboard UI to match the reference images — a polished SaaS-style panel with a theme customizer popover, refined sidebar, enhanced top bar, and dark mode support.
 
 ---
 
-### 2. New routes & pages — CRUD for Salas, Reservas, Game Masters, Ajustes
+### 1. Theme System — Context & CSS Variables
 
-**File: `src/App.tsx`** — Add routes: `/salas`, `/reservas`, `/game-masters`, `/ajustes`
+**New file: `src/contexts/ThemeContext.tsx`**
+- React context managing: `preset`, `scale`, `radius`, `colorMode`, `contentLayout`, `sidebarMode`
+- Persists settings to `localStorage` under `gr_theme`
+- On preset change, applies a CSS class (e.g., `theme-underground`) to `<html>` that overrides `--primary` and `--ring` HSL values
+- On `colorMode` change, toggles `dark` class on `<html>`
+- On `scale` change, sets a CSS variable `--ui-scale` (0.875 for XS, 1.125 for LG, 1 for default) applied to `font-size` on `<html>`
+- On `radius` change, updates `--radius` (0 for none, 0.25rem SM, 0.5rem MD, 0.75rem LG, 1rem XL)
+- Exposes `resetTheme()` to restore defaults
 
-**New Edge Function: `supabase/functions/panel-crud/index.ts`**
-- Single function handling all CRUD operations via `action` parameter
-- Every request requires `accessKey` — validated against `profiles` with active plan
-- Actions: `list-salas`, `create-sala`, `update-sala`, `delete-sala`, `list-reservas`, `create-reserva`, `update-reserva`, `delete-reserva`, `list-game-masters`, `create-game-master`, `update-game-master`, `delete-game-master`
-- All queries filter by `profile_id` derived from the validated `access_key`
+**Modify: `src/index.css`**
+- Add 8 theme preset classes (`:root.theme-underground`, etc.) each overriding `--primary`, `--primary-foreground`, `--ring`, `--sidebar-primary` with the corresponding color
+- Presets: Default (blue), Underground (green #22c55e), Rose Garden (pink #f43f5e), Lake View (cyan #06b6d4), Sunset Glow (orange #f97316), Forest Whisper (emerald #10b981), Ocean Breeze (blue #3b82f6), Lavender Dream (violet #8b5cf6)
 
-**New pages:**
-
-- **`src/pages/SalasPage.tsx`** — Table listing rooms from `salas` table + create/edit dialog (name, theme, difficulty, capacity, active toggle) + delete confirmation
-- **`src/pages/ReservasPage.tsx`** — Table listing reservations from `reservas` table with filters + create/edit dialog (client_name, sala_id selector, date, time, game_master_id selector, players, status) + delete
-- **`src/pages/GameMastersPage.tsx`** — Simple list/table from `game_masters` table + add/edit dialog (name, available toggle) + delete
-- **`src/pages/AjustesPage.tsx`** — Two sections:
-  - Change password form (current password, new password, confirm) → calls `panel-auth` with new `change_password` action
-  - Update company name form → calls `panel-crud` with `update-profile` action
-
-**New action in `panel-auth`: `change_password`**
-- Receives `accessKey`, `username`, `currentPassword`, `newPassword`
-- Validates access key, verifies current password with bcrypt, updates `password_hash`
-
-Each page reuses the same layout shell (LeftSidebar + TopBar) via a shared layout wrapper.
+**Modify: `src/App.tsx`**
+- Wrap everything in `<ThemeProvider>`
 
 ---
 
-### 3. Dashboard KPIs — Real counts
+### 2. Theme Customizer Popover
 
-**File: `supabase/functions/dashboard-data/index.ts`**
-- Fix `totalReservations` to count ALL reservas (currently limited to 10 by the query limit)
-- Add a separate count query: `supabase.from("reservas").select("*", { count: "exact", head: true }).eq("profile_id", profileId)`
-
-**File: `src/components/KPICards.tsx`** — No changes needed, already displays dynamic data
-
----
-
-### 4. Security hardening
-
-**Session validation in `src/pages/Index.tsx`:**
-- On load, parse `gr_session` → extract `profile_id` and `access_key`
-- Call `validate-access-key` to verify the session is still valid before rendering dashboard
-- If invalid, clear localStorage and redirect to `/activate`
-
-**Edge function `panel-crud`:**
-- Every request derives `profile_id` from the server-validated `access_key` — never trusts client-sent `profile_id`
-- All DB queries use the server-derived `profile_id`
-
-**Registration protection:** Already implemented in previous iterations.
+**New file: `src/components/ThemeCustomizer.tsx`**
+- Triggered by a gear/palette icon in the TopBar
+- Uses `Popover` from shadcn
+- Sections matching the reference image exactly:
+  - **Theme preset**: `Select` dropdown with colored dots + preset names
+  - **Scale**: Segmented toggle (None / XS / LG)
+  - **Radius**: Segmented toggle (None / SM / MD / LG / XL)
+  - **Color mode**: Light / Dark toggle
+  - **Content layout**: Full / Centered toggle
+  - **Sidebar mode**: Default / Icon toggle
+  - **Reset to Default** button at bottom
+- All controls read/write from ThemeContext
 
 ---
 
-### 5. Shared layout wrapper
+### 3. Sidebar Redesign
 
-**New file: `src/components/DashboardLayout.tsx`**
-- Wraps LeftSidebar + TopBar + main content area + RightSidebar (optional)
-- Handles session check, profile loading, and logout
-- Used by Index, SalasPage, ReservasPage, GameMastersPage, AjustesPage
+**Modify: `src/components/LeftSidebar.tsx`**
+- White/light background in light mode (not dark navy) — matches reference
+- Cleaner nav items with subtle hover states and active indicator
+- Add category labels/groups (e.g., "Principal", "Gestión")
+- Add badges: "New" in soft green for newer sections
+- Bottom section: "Unlock Everything" card with subtle gradient background, description text, and "Get Full Access" button (links to pricing page)
+- User info card at very bottom with avatar, name, email
+- Respond to `sidebarMode` from ThemeContext — collapse to icon-only when set to "Icon"
+- Use light sidebar colors: white bg, gray text, primary accent for active
+
+**Modify: `src/index.css`**
+- Update sidebar CSS variables for light mode: white background, dark text
 
 ---
 
-### Database changes
+### 4. Top Bar Enhancement
 
-**Migration needed:** Add a count query approach — no schema changes required. The existing `salas`, `game_masters`, and `reservas` tables already have the needed columns.
-
-**`supabase/config.toml`:** Add `[functions.panel-crud]` with `verify_jwt = false`
+**Modify: `src/components/TopBar.tsx`**
+- Search input with `⌘ K` keyboard shortcut badge inside the input (visual only)
+- Notification bell with red dot indicator
+- Dark mode toggle button (moon/sun icon) — calls ThemeContext
+- Theme customizer trigger (palette icon) — opens the popover
+- User avatar dropdown (using `DropdownMenu` from shadcn) with items: Account, Billing, Notifications, Log out
+- Remove the current title/subtitle — move to a simpler layout matching reference
 
 ---
 
-### Files summary
+### 5. Content Layout Support
+
+**Modify: `src/components/DashboardLayout.tsx`**
+- Read `contentLayout` from ThemeContext
+- When "Centered", wrap main content in `max-w-6xl mx-auto`
+- When "Full", use full width (current behavior)
+- Read `sidebarMode` and pass to LeftSidebar
+
+---
+
+### 6. Dark Mode CSS
+
+**Modify: `src/index.css`**
+- Refine `.dark` variables for a deep charcoal look (not pure black):
+  - `--background: 224 10% 10%` (charcoal)
+  - `--card: 224 10% 12%`
+  - Cards, sidebar, and popover get subtle contrast differences
+- Sidebar in dark mode: very dark background with lighter text
+
+---
+
+### Files Summary
 
 | Action | File |
 |--------|------|
-| Create | `supabase/functions/panel-crud/index.ts` |
-| Create | `src/components/DashboardLayout.tsx` |
-| Create | `src/pages/SalasPage.tsx` |
-| Create | `src/pages/ReservasPage.tsx` |
-| Create | `src/pages/GameMastersPage.tsx` |
-| Create | `src/pages/AjustesPage.tsx` |
-| Modify | `src/App.tsx` — add 4 routes |
-| Modify | `src/components/LeftSidebar.tsx` — remove key/email, show username |
-| Modify | `src/pages/Index.tsx` — use DashboardLayout |
-| Modify | `supabase/functions/dashboard-data/index.ts` — fix total count |
-| Modify | `supabase/functions/panel-auth/index.ts` — add `change_password` action |
-| Modify | `supabase/config.toml` — add panel-crud function |
+| Create | `src/contexts/ThemeContext.tsx` |
+| Create | `src/components/ThemeCustomizer.tsx` |
+| Modify | `src/index.css` — theme presets, dark mode refinement, sidebar light colors |
+| Modify | `src/App.tsx` — wrap in ThemeProvider |
+| Modify | `src/components/LeftSidebar.tsx` — light sidebar, categories, badges, unlock card, collapse support |
+| Modify | `src/components/TopBar.tsx` — search with ⌘K, notifications dot, dark toggle, customizer trigger, user dropdown |
+| Modify | `src/components/DashboardLayout.tsx` — content layout and sidebar mode support |
+
+No backend or database changes required.
 
