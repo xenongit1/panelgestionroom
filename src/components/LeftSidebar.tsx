@@ -8,15 +8,22 @@ import {
   CreditCard,
   ExternalLink,
   Sparkles,
-  PanelLeftClose,
-  PanelLeft,
+  ChevronLeft,
+  ChevronRight,
   MoreVertical,
+  LogOut,
 } from "lucide-react";
-import { GestionRoomLogo } from "./GestionRoomLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTheme } from "@/contexts/ThemeContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navGroups = [
   {
@@ -67,22 +74,27 @@ export function LeftSidebar({ username, companyName, ownerName, email }: LeftSid
   return (
     <aside
       className={cn(
-        "flex flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground transition-all duration-300 shrink-0 h-screen",
+        "flex flex-col border-r border-[#F0F0F0] dark:border-border text-foreground transition-all duration-300 shrink-0 h-screen bg-[#F9FAFB] dark:bg-sidebar",
         collapsed ? "w-[68px]" : "w-[260px]"
       )}
     >
-      {/* Header: Logo + Collapse toggle */}
-      <div className="flex h-14 items-center justify-between px-4 border-b border-sidebar-border">
-        <GestionRoomLogo collapsed={collapsed} />
+      {/* Header */}
+      <div className="flex h-14 items-center justify-between px-4 border-b border-[#F0F0F0] dark:border-border">
+        <div className="flex items-center gap-2 min-w-0">
+          <LayoutDashboard className="h-6 w-6 shrink-0 text-foreground" strokeWidth={1.5} />
+          {!collapsed && (
+            <span className="text-sm font-semibold text-foreground truncate">GestionRoom</span>
+          )}
+        </div>
         <button
           onClick={() => setSidebarMode(collapsed ? "default" : "icon")}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
           title={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
         >
           {collapsed ? (
-            <PanelLeft className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
           ) : (
-            <PanelLeftClose className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
           )}
         </button>
       </div>
@@ -110,7 +122,7 @@ export function LeftSidebar({ username, companyName, ownerName, email }: LeftSid
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
-                  <item.icon className="h-[18px] w-[18px] shrink-0" />
+                  <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} />
                   {!collapsed && (
                     <span className="flex-1 text-left">{item.title}</span>
                   )}
@@ -130,7 +142,7 @@ export function LeftSidebar({ username, companyName, ownerName, email }: LeftSid
       {!collapsed && (
         <div className="mx-3 mb-3 rounded-xl bg-muted/50 border border-border p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary" strokeWidth={1.5} />
             <span className="text-xs font-semibold text-foreground">Unlock Everything</span>
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
@@ -141,15 +153,15 @@ export function LeftSidebar({ username, companyName, ownerName, email }: LeftSid
             className="w-full text-xs h-8"
             onClick={() => window.open("https://gestionroom.com/precios", "_blank")}
           >
-            <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+            <CreditCard className="h-3.5 w-3.5 mr-1.5" strokeWidth={1.5} />
             Get Full Access
-            <ExternalLink className="h-3 w-3 ml-1" />
+            <ExternalLink className="h-3 w-3 ml-1" strokeWidth={1.5} />
           </Button>
         </div>
       )}
 
       {/* User footer */}
-      <div className={cn("border-t border-sidebar-border p-3", collapsed ? "flex justify-center" : "")}>
+      <div className={cn("border-t border-[#F0F0F0] dark:border-border p-3", collapsed ? "flex justify-center" : "")}>
         <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
           <Avatar className="h-8 w-8 shrink-0">
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
@@ -166,9 +178,24 @@ export function LeftSidebar({ username, companyName, ownerName, email }: LeftSid
                   {displayEmail}
                 </p>
               </div>
-              <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0">
-                <MoreVertical className="h-4 w-4" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0">
+                    <MoreVertical className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/ajustes")}>
+                    <Settings className="h-4 w-4 mr-2" strokeWidth={1.5} />
+                    Ajustes
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" strokeWidth={1.5} />
+                    Cerrar sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
         </div>
