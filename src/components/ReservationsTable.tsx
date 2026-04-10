@@ -68,7 +68,7 @@ export function ReservationsTable({ reservations }: ReservationsTableProps) {
       <CardContent className="p-0">
         {filtered.length === 0 ? (
           <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            No hay reservas para mostrar
+            No hay <span className="font-semibold text-foreground mx-1">reservas</span> para mostrar
           </div>
         ) : (
           <Table>
