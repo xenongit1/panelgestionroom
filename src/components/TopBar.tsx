@@ -12,7 +12,7 @@ interface TopBarProps {
   onLogout?: () => void;
 }
 
-export function TopBar({ profile, title = "Dashboard", onLogout }: TopBarProps) {
+export function TopBar({ profile, onLogout }: TopBarProps) {
   const { colorMode, setColorMode } = useTheme();
 
   const initials = (profile.company_name || profile.email || "GR")
@@ -24,23 +24,21 @@ export function TopBar({ profile, title = "Dashboard", onLogout }: TopBarProps) 
 
   return (
     <div className="flex items-center justify-between gap-4 pb-6">
-      <div>
-        <h1 className="text-xl font-semibold text-foreground tracking-tight">{title}</h1>
+      {/* Left: Search */}
+      <div className="relative hidden md:block">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search..."
+          className="w-64 pl-9 pr-14 bg-background border-border h-9 text-sm"
+          readOnly
+        />
+        <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
+          ⌘K
+        </kbd>
       </div>
-      <div className="flex items-center gap-2">
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="w-56 pl-9 pr-14 bg-background border-border h-9 text-sm"
-            readOnly
-          />
-          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
-            ⌘K
-          </kbd>
-        </div>
 
+      {/* Right: actions */}
+      <div className="flex items-center gap-2 ml-auto">
         {/* Notifications */}
         <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Bell className="h-4 w-4" />

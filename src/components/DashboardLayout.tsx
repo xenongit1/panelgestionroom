@@ -102,7 +102,12 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <LeftSidebar username={session.username} companyName={profile.company_name} />
+      <LeftSidebar
+        username={session.username}
+        companyName={profile.company_name}
+        ownerName={(profile as any).owner_name}
+        email={profile.email}
+      />
       <main className="flex-1 overflow-y-auto p-6 lg:p-8">
         <div className={cn(contentLayout === "centered" && "max-w-6xl mx-auto")}>
           <TopBar profile={profile} title={title} onLogout={handleLogout} />
