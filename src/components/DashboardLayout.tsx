@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LeftSidebar } from "@/components/LeftSidebar";
 import { TopBar } from "@/components/TopBar";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/dashboard";
 
 interface SessionData {
@@ -21,6 +23,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, title = "Dashboard", showRightSidebar }: DashboardLayoutProps) {
   const navigate = useNavigate();
+  const { contentLayout } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,9 +104,11 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
     <div className="flex h-screen overflow-hidden bg-background">
       <LeftSidebar username={session.username} companyName={profile.company_name} />
       <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-        <TopBar profile={profile} title={title} onLogout={handleLogout} />
-        <div className="space-y-6">
-          {children({ profile, session, accessKey })}
+        <div className={cn(contentLayout === "centered" && "max-w-6xl mx-auto")}>
+          <TopBar profile={profile} title={title} onLogout={handleLogout} />
+          <div className="space-y-6">
+            {children({ profile, session, accessKey })}
+          </div>
         </div>
       </main>
       {showRightSidebar}
