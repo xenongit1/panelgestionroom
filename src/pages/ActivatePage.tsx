@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { KeyRound, ArrowRight, Loader2, User, Lock, Eye, EyeOff, CheckCircle2, LogIn, Building2, Mail, Phone, Globe, MapPin } from "lucide-react";
+import {
+  KeyRound, ArrowRight, Loader2, User, Lock, Eye, EyeOff,
+  CheckCircle2, LogIn, Building2, Mail, Phone, Globe, MapPin,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,30 +21,28 @@ export default function ActivatePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Account fields
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Business fields
   const [bizName, setBizName] = useState("");
   const [bizEmail, setBizEmail] = useState("");
   const [bizPhone, setBizPhone] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
 
-  const inputClasses = "bg-[#FAFAFA] border-[#E2E2E2] text-foreground placeholder:text-[#A0A0A0] pl-10 focus-visible:ring-foreground/20";
-  const iconClasses = "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#999]";
+  const inputClasses =
+    "h-11 sm:h-12 bg-[#FAFAFA] border-[#E2E2E2] text-foreground text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-foreground/20";
+  const iconClasses =
+    "absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#999]";
 
   const handleKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!accessKey.trim()) {
       setError("Introduce tu clave de acceso.");
       return;
     }
-
     setLoading(true);
     setError("");
 
@@ -168,22 +169,39 @@ export default function ActivatePage() {
     <AuthLayout>
       {step === "key" && (
         <>
-          <h2 className="mb-2 text-center text-xl font-semibold text-foreground">Activa tu Panel</h2>
-          <p className="mb-6 text-center text-sm text-[#666]">Introduce la clave de acceso de tu empresa para comenzar.</p>
+          <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">
+            Activa tu Panel
+          </h2>
+          <p className="mb-6 text-center text-[13px] text-[#888]">
+            Introduce la clave de acceso de tu empresa para comenzar.
+          </p>
           <form onSubmit={handleKeySubmit} className="space-y-4">
             <div className="relative">
               <KeyRound className={iconClasses} strokeWidth={1.5} />
-              <Input type="text" placeholder="XXXXXX-000000" value={accessKey}
-                onChange={(e) => { setAccessKey(e.target.value); if (error) setError(""); }} disabled={loading}
-                className={inputClasses} />
+              <Input
+                type="text"
+                placeholder="XXXXXX-000000"
+                value={accessKey}
+                onChange={(e) => { setAccessKey(e.target.value); if (error) setError(""); }}
+                disabled={loading}
+                className={inputClasses}
+              />
             </div>
             {error && <p className="text-xs font-medium text-red-500">{error}</p>}
-            <Button className="w-full h-11" type="submit" disabled={loading}>
+            <Button
+              className="w-full h-12 text-[15px] font-medium rounded-lg active:scale-[0.98] transition-all"
+              type="submit"
+              disabled={loading}
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Verificar Clave <ArrowRight className="ml-1.5 h-4 w-4" /></>}
             </Button>
           </form>
-          <div className="mt-6 text-center">
-            <button type="button" onClick={() => navigate("/login")} className="text-xs text-[#999] underline-offset-4 hover:text-foreground hover:underline">
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline"
+            >
               Ya tengo cuenta — Iniciar sesión
             </button>
           </div>
@@ -194,13 +212,17 @@ export default function ActivatePage() {
         <>
           <div className="mb-4 flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-emerald-700">Clave verificada</span>
+            <span className="text-[13px] font-medium text-emerald-700">Clave verificada</span>
           </div>
           {companyName && (
-            <p className="mb-2 text-center text-lg font-semibold text-foreground">{companyName}</p>
+            <p className="mb-2 text-center text-lg sm:text-xl font-semibold text-foreground">{companyName}</p>
           )}
-          <h2 className="mb-1 text-center text-xl font-semibold text-foreground">Crear Cuenta de Administrador</h2>
-          <p className="mb-6 text-center text-sm text-[#666]">Crea tu usuario y completa los datos de tu negocio.</p>
+          <h2 className="mb-1 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">
+            Crear Cuenta de Administrador
+          </h2>
+          <p className="mb-6 text-center text-[13px] text-[#888]">
+            Crea tu usuario y completa los datos de tu negocio.
+          </p>
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="relative">
               <User className={iconClasses} strokeWidth={1.5} />
@@ -214,8 +236,8 @@ export default function ActivatePage() {
                 onChange={(e) => setPassword(e.target.value)} disabled={loading}
                 className={inputClasses + " pr-10"} autoComplete="new-password" />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#999] hover:text-foreground">
-                {showPassword ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-foreground">
+                {showPassword ? <EyeOff className="h-[18px] w-[18px]" strokeWidth={1.5} /> : <Eye className="h-[18px] w-[18px]" strokeWidth={1.5} />}
               </button>
             </div>
             <div className="relative">
@@ -226,7 +248,7 @@ export default function ActivatePage() {
             </div>
 
             <div className="border-t border-[#E8E8E8] pt-4">
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[#999]">Datos del negocio</p>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.1em] text-[#999]">Datos del negocio</p>
             </div>
 
             <div className="relative">
@@ -263,27 +285,34 @@ export default function ActivatePage() {
             </div>
 
             {error && <p className="text-xs font-medium text-red-500">{error}</p>}
-            <Button className="w-full h-11" type="submit" disabled={!username || !password || !confirmPassword || loading}>
+            <Button
+              className="w-full h-12 text-[15px] font-medium rounded-lg active:scale-[0.98] transition-all"
+              type="submit"
+              disabled={!username || !password || !confirmPassword || loading}
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Crear Cuenta <ArrowRight className="ml-1.5 h-4 w-4" /></>}
             </Button>
           </form>
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <button type="button" onClick={() => { setStep("key"); setError(""); }}
-              className="text-xs text-[#999] underline-offset-4 hover:text-foreground hover:underline">← Usar otra clave</button>
+              className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline">← Usar otra clave</button>
           </div>
         </>
       )}
 
       {step === "has_owner" && (
         <div className="text-center space-y-4">
-          {companyName && <p className="text-lg font-semibold text-foreground">{companyName}</p>}
-          <h2 className="text-xl font-semibold text-foreground">Panel ya activado</h2>
-          <p className="text-sm text-[#666]">Este panel ya tiene un administrador configurado. Inicia sesión para acceder.</p>
-          <Button className="w-full h-11" onClick={() => navigate("/login")}>
+          {companyName && <p className="text-lg sm:text-xl font-semibold text-foreground">{companyName}</p>}
+          <h2 className="text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">Panel ya activado</h2>
+          <p className="text-[13px] text-[#888]">Este panel ya tiene un administrador configurado. Inicia sesión para acceder.</p>
+          <Button
+            className="w-full h-12 text-[15px] font-medium rounded-lg active:scale-[0.98] transition-all"
+            onClick={() => navigate("/login")}
+          >
             <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión
           </Button>
           <button type="button" onClick={() => { setStep("key"); setError(""); }}
-            className="text-xs text-[#999] underline-offset-4 hover:text-foreground hover:underline">← Usar otra clave</button>
+            className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline">← Usar otra clave</button>
         </div>
       )}
     </AuthLayout>

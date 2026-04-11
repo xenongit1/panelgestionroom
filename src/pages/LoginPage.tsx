@@ -54,28 +54,53 @@ export default function LoginPage() {
     }
   };
 
-  const inputClasses = "bg-[#FAFAFA] border-[#E2E2E2] text-foreground placeholder:text-[#A0A0A0] pl-10 focus-visible:ring-foreground/20";
-  const iconClasses = "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#999]";
+  const inputClasses =
+    "h-11 sm:h-12 bg-[#FAFAFA] border-[#E2E2E2] text-foreground text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-foreground/20";
+  const iconClasses =
+    "absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#999]";
 
   return (
     <AuthLayout>
-      <h2 className="mb-2 text-center text-xl font-semibold text-foreground">Iniciar Sesión</h2>
-      <p className="mb-6 text-center text-sm text-[#666]">Accede a tu panel de control.</p>
+      <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">
+        Iniciar Sesión
+      </h2>
+      <p className="mb-6 text-center text-[13px] text-[#888]">
+        Accede a tu panel de control.
+      </p>
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="relative">
           <User className={iconClasses} strokeWidth={1.5} />
-          <Input type="text" placeholder="Nombre de usuario" value={username}
-            onChange={(e) => setUsername(e.target.value)} disabled={loading}
-            className={inputClasses} autoComplete="username" />
+          <Input
+            type="text"
+            placeholder="Nombre de usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
+            className={inputClasses}
+            autoComplete="username"
+          />
         </div>
         <div className="relative">
           <Lock className={iconClasses} strokeWidth={1.5} />
-          <Input type={showPassword ? "text" : "password"} placeholder="Contraseña" value={password}
-            onChange={(e) => setPassword(e.target.value)} disabled={loading}
-            className={inputClasses + " pr-10"} autoComplete="current-password" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#999] hover:text-foreground">
-            {showPassword ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
+          <Input
+            type={showPassword ? "text" : "password"}
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            className={inputClasses + " pr-10"}
+            autoComplete="current-password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-foreground"
+          >
+            {showPassword ? (
+              <EyeOff className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            ) : (
+              <Eye className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            )}
           </button>
         </div>
 
@@ -86,19 +111,35 @@ export default function LoginPage() {
             onCheckedChange={(v) => setRemember(v === true)}
             className="border-[#D0D0D0] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
           />
-          <label htmlFor="remember" className="text-xs text-[#888] cursor-pointer select-none">
+          <label
+            htmlFor="remember"
+            className="text-[13px] text-[#888] cursor-pointer select-none"
+          >
             Mantener sesión iniciada
           </label>
         </div>
 
         {error && <p className="text-xs font-medium text-red-500">{error}</p>}
-        <Button className="w-full h-11" type="submit" disabled={!username || !password || loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Entrar al Panel <ArrowRight className="ml-1.5 h-4 w-4" /></>}
+        <Button
+          className="w-full h-12 text-[15px] font-medium rounded-lg active:scale-[0.98] transition-all"
+          type="submit"
+          disabled={!username || !password || loading}
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              Entrar al Panel <ArrowRight className="ml-1.5 h-4 w-4" />
+            </>
+          )}
         </Button>
       </form>
-      <div className="mt-6 text-center">
-        <button type="button" onClick={() => navigate("/activate")}
-          className="text-xs text-[#999] underline-offset-4 hover:text-foreground hover:underline">
+      <div className="mt-8 text-center">
+        <button
+          type="button"
+          onClick={() => navigate("/activate")}
+          className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline"
+        >
           Activar nuevo panel
         </button>
       </div>
