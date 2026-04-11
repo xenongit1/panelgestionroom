@@ -194,7 +194,7 @@ export default function ActivatePage() {
             Activa tu Panel
           </h2>
 
-          <p className="mx-auto mb-8 max-w-[32ch] text-center text-[15px] leading-6 text-[#6E6E6E]">
+          <p className="mx-auto mb-8 max-w-[32ch] text-center text-[15px] leading-6 text-[#66615C]">
             Introduce la clave de acceso de tu empresa para comenzar.
           </p>
 
@@ -261,7 +261,7 @@ export default function ActivatePage() {
             Crear Cuenta de Administrador
           </h2>
 
-          <p className="mx-auto mb-8 max-w-[34ch] text-center text-[15px] leading-6 text-[#6E6E6E]">
+          <p className="mx-auto mb-8 max-w-[34ch] text-center text-[15px] leading-6 text-[#66615C]">
             Crea tu usuario y completa los datos principales de tu negocio.
           </p>
 
@@ -429,7 +429,7 @@ export default function ActivatePage() {
             Panel ya activado
           </h2>
 
-          <p className="mx-auto mb-8 max-w-[34ch] text-center text-[15px] leading-6 text-[#6E6E6E]">
+          <p className="mx-auto mb-8 max-w-[34ch] text-center text-[15px] leading-6 text-[#66615C]">
             Este panel ya tiene un administrador configurado. Inicia sesión para acceder.
           </p>
 
