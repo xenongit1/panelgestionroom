@@ -7,23 +7,23 @@ interface AuthLayoutProps {
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div
-      className="flex min-h-[100dvh] items-center justify-center p-5 sm:p-6 font-sans"
+      className="min-h-[100dvh] font-sans px-4 py-8 sm:px-6 sm:py-10"
       style={{
         fontFamily: "'Geist', system-ui, sans-serif",
-        backgroundColor: "#F7F7F8",
-        backgroundImage:
-          "radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)",
-        backgroundSize: "30px 30px",
+        fontFeatureSettings: '"ss01" 1, "cv01" 1, "cv11" 1',
+        backgroundColor: "#F6F6F4",
+        backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.035) 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
       }}
     >
-      <div className="w-full max-w-[500px]">
+      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-[540px] flex-col items-center justify-center">
         <AuthBrand />
+
         <div
-          className="rounded-2xl p-6 sm:p-10 bg-white"
+          className="w-full rounded-[28px] border bg-white px-6 py-7 sm:px-10 sm:py-10"
           style={{
-            border: "1px solid #E8E8E8",
-            boxShadow:
-              "0 2px 12px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
+            borderColor: "#E7E5E4",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
           }}
         >
           {children}
