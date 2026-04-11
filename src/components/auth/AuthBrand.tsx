@@ -1,16 +1,14 @@
 export function AuthBrand() {
   return (
-    <div className="mb-8 flex flex-col items-center gap-3">
-      <img
-        src="/logo-mark-dark.svg"
-        alt="GestionRoom"
-        className="h-14 w-14 sm:h-16 sm:w-16 object-contain"
-      />
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-[28px] sm:text-[30px] font-semibold tracking-[-0.03em] text-[#1A1A1A]">
+    <div className="mb-6 sm:mb-8 flex flex-col items-center text-center">
+      <img src="/logo-mark-dark.svg" alt="GestionRoom" className="h-20 w-20 sm:h-24 sm:w-24 object-contain" />
+
+      <div className="mt-4 flex flex-col items-center">
+        <span className="font-sans text-[36px] leading-none sm:text-[42px] font-semibold tracking-[-0.055em] text-[#111111]">
           GestionRoom
         </span>
-        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#8F8F8F]">
+
+        <span className="mt-2 text-[11px] sm:text-xs font-medium uppercase tracking-[0.24em] text-[#8A8A8A]">
           Panel de Control
         </span>
       </div>
