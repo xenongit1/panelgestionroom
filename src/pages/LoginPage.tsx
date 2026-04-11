@@ -121,7 +121,7 @@ export default function LoginPage() {
 
         {error && <p className="text-xs font-medium text-red-500">{error}</p>}
         <Button
-          className="w-full h-12 text-[15px] font-medium rounded-lg active:scale-[0.98] transition-all"
+          className="w-full h-14 rounded-xl text-[15px] font-medium tracking-[-0.01em] transition-all disabled:opacity-100 disabled:bg-[#B8B8B8] disabled:text-white"
           type="submit"
           disabled={!username || !password || loading}
         >
