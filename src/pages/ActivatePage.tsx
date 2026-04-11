@@ -45,9 +45,9 @@ export default function ActivatePage() {
   const [city, setCity] = useState("");
 
   const inputClasses =
-    "h-14 bg-[#FCFCFB] border-[#E5E5E5] text-[#111111] text-[15px] placeholder:text-[#A0A0A0] pl-12 rounded-xl shadow-none focus-visible:ring-[3px] focus-visible:ring-black/5 focus-visible:border-[#111111]";
+    "h-14 bg-[#FBFBFA] border-[#DCDAD7] text-[#111111] text-[15px] placeholder:text-[#9A9A9A] pl-12 rounded-xl shadow-none focus-visible:ring-[3px] focus-visible:ring-black/5 focus-visible:border-[#111111]";
 
-  const iconClasses = "absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A1A1A1]";
+  const iconClasses = "absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#9C9C9C]";
 
   const handleKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
