@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AuthLayout } from "@/components/AuthLayout";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { saveSession } from "@/lib/session";
 
 export default function LoginPage() {
@@ -55,13 +55,13 @@ export default function LoginPage() {
   };
 
   const inputClasses =
-    "h-11 sm:h-12 bg-[#FAFAFA] border-[#E2E2E2] text-foreground text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-foreground/20";
+    "h-12 bg-[#FAFAFA] border-[#E0E0E0] text-[#1A1A1A] text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-[#1A1A1A]/20";
   const iconClasses =
     "absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#999]";
 
   return (
     <AuthLayout>
-      <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">
+      <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-[#1A1A1A]">
         Iniciar Sesión
       </h2>
       <p className="mb-6 text-center text-[13px] text-[#888]">
@@ -94,7 +94,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#1A1A1A]"
           >
             {showPassword ? (
               <EyeOff className="h-[18px] w-[18px]" strokeWidth={1.5} />
@@ -109,11 +109,11 @@ export default function LoginPage() {
             id="remember"
             checked={remember}
             onCheckedChange={(v) => setRemember(v === true)}
-            className="border-[#D0D0D0] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            className="border-[#D0D0D0] data-[state=checked]:bg-[#1A1A1A] data-[state=checked]:border-[#1A1A1A]"
           />
           <label
             htmlFor="remember"
-            className="text-[13px] text-[#888] cursor-pointer select-none"
+            className="text-[13px] text-[#777] cursor-pointer select-none"
           >
             Mantener sesión iniciada
           </label>
@@ -138,7 +138,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => navigate("/activate")}
-          className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline"
+          className="text-[13px] text-[#999] underline-offset-4 hover:text-[#1A1A1A] hover:underline"
         >
           Activar nuevo panel
         </button>
