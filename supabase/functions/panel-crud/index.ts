@@ -13,11 +13,12 @@ function json(data: unknown, status = 200) {
   });
 }
 
-async function getProfileId(supabase: any, accessKey: string): Promise<string | null> {
+async function verifyProfile(supabase: any, profileId: string): Promise<string | null> {
+  if (!profileId) return null;
   const { data } = await supabase
     .from("profiles")
     .select("id")
-    .eq("access_key", accessKey)
+    .eq("id", profileId)
     .in("plan_status", ["pro", "anual", "active"])
     .maybeSingle();
   return data?.id || null;
@@ -30,9 +31,9 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { action, accessKey } = body;
+    const { action, profileId } = body;
 
-    if (!action || !accessKey) {
+    if (!action || !profileId) {
       return json({ error: "missing_fields" }, 400);
     }
 
@@ -41,8 +42,8 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const profileId = await getProfileId(supabase, accessKey);
-    if (!profileId) {
+    const verified = await verifyProfile(supabase, profileId);
+    if (!verified) {
       return json({ error: "unauthorized" }, 403);
     }
 
@@ -51,7 +52,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("salas")
         .select("*")
-        .eq("profile_id", profileId)
+        .eq("profile_id", verified)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return json({ data });
@@ -65,7 +66,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("salas")
         .insert({
-          profile_id: profileId,
+          profile_id: verified,
           name: name.trim().slice(0, 100),
           theme: theme?.trim()?.slice(0, 100) || null,
           difficulty: Math.min(Math.max(Number(difficulty) || 3, 1), 5),
@@ -92,7 +93,7 @@ Deno.serve(async (req) => {
         .from("salas")
         .update(update)
         .eq("id", id)
-        .eq("profile_id", profileId)
+        .eq("profile_id", verified)
         .select()
         .single();
       if (error) throw error;
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
         .from("salas")
         .delete()
         .eq("id", id)
-        .eq("profile_id", profileId);
+        .eq("profile_id", verified);
       if (error) throw error;
       return json({ success: true });
     }
@@ -116,7 +117,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("reservas")
         .select("*, salas(name), game_masters(name)")
-        .eq("profile_id", profileId)
+        .eq("profile_id", verified)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return json({ data });
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("reservas")
         .insert({
-          profile_id: profileId,
+          profile_id: verified,
           client_name: String(client_name).trim().slice(0, 100),
           sala_id,
           date,
@@ -163,7 +164,7 @@ Deno.serve(async (req) => {
         .from("reservas")
         .update(update)
         .eq("id", id)
-        .eq("profile_id", profileId)
+        .eq("profile_id", verified)
         .select("*, salas(name), game_masters(name)")
         .single();
       if (error) throw error;
@@ -177,7 +178,7 @@ Deno.serve(async (req) => {
         .from("reservas")
         .delete()
         .eq("id", id)
-        .eq("profile_id", profileId);
+        .eq("profile_id", verified);
       if (error) throw error;
       return json({ success: true });
     }
@@ -187,7 +188,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("game_masters")
         .select("*")
-        .eq("profile_id", profileId)
+        .eq("profile_id", verified)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return json({ data });
@@ -201,7 +202,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("game_masters")
         .insert({
-          profile_id: profileId,
+          profile_id: verified,
           name: name.trim().slice(0, 100),
           available: available !== false,
         })
@@ -222,7 +223,7 @@ Deno.serve(async (req) => {
         .from("game_masters")
         .update(update)
         .eq("id", id)
-        .eq("profile_id", profileId)
+        .eq("profile_id", verified)
         .select()
         .single();
       if (error) throw error;
@@ -236,7 +237,7 @@ Deno.serve(async (req) => {
         .from("game_masters")
         .delete()
         .eq("id", id)
-        .eq("profile_id", profileId);
+        .eq("profile_id", verified);
       if (error) throw error;
       return json({ success: true });
     }
@@ -250,7 +251,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase
         .from("profiles")
         .update({ company_name: company_name.trim().slice(0, 100) })
-        .eq("id", profileId)
+        .eq("id", verified)
         .select("id, company_name")
         .single();
       if (error) throw error;

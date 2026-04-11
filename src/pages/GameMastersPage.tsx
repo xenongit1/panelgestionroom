@@ -17,12 +17,12 @@ import type { GameMaster } from "@/types/dashboard";
 export default function GameMastersPage() {
   return (
     <DashboardLayout title="Game Masters">
-      {({ accessKey }) => <GMContent accessKey={accessKey} />}
+      {() => <GMContent />}
     </DashboardLayout>
   );
 }
 
-function GMContent({ accessKey }: { accessKey: string }) {
+function GMContent() {
   const [gms, setGms] = useState<GameMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -33,11 +33,11 @@ function GMContent({ accessKey }: { accessKey: string }) {
 
   const load = useCallback(async () => {
     try {
-      const res = await panelCrud("list-game-masters", accessKey);
+      const res = await panelCrud("list-game-masters");
       setGms(res.data || []);
     } catch { toast.error("Error al cargar Game Masters"); }
     setLoading(false);
-  }, [accessKey]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -49,10 +49,10 @@ function GMContent({ accessKey }: { accessKey: string }) {
     setSaving(true);
     try {
       if (editing) {
-        await panelCrud("update-game-master", accessKey, { id: editing.id, ...form });
+        await panelCrud("update-game-master", { id: editing.id, ...form });
         toast.success("Game Master actualizado");
       } else {
-        await panelCrud("create-game-master", accessKey, form);
+        await panelCrud("create-game-master", form);
         toast.success("Game Master creado");
       }
       setDialogOpen(false);
@@ -64,7 +64,7 @@ function GMContent({ accessKey }: { accessKey: string }) {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await panelCrud("delete-game-master", accessKey, { id: deleteId });
+      await panelCrud("delete-game-master", { id: deleteId });
       toast.success("Game Master eliminado");
       setDeleteId(null);
       load();

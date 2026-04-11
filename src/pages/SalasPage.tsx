@@ -19,12 +19,12 @@ const emptySala = { name: "", theme: "", difficulty: 3, capacity: 6, active: tru
 export default function SalasPage() {
   return (
     <DashboardLayout title="Salas">
-      {({ accessKey }) => <SalasContent accessKey={accessKey} />}
+      {() => <SalasContent />}
     </DashboardLayout>
   );
 }
 
-function SalasContent({ accessKey }: { accessKey: string }) {
+function SalasContent() {
   const [salas, setSalas] = useState<Sala[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -35,11 +35,11 @@ function SalasContent({ accessKey }: { accessKey: string }) {
 
   const load = useCallback(async () => {
     try {
-      const res = await panelCrud("list-salas", accessKey);
+      const res = await panelCrud("list-salas");
       setSalas(res.data || []);
     } catch { toast.error("Error al cargar salas"); }
     setLoading(false);
-  }, [accessKey]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -51,10 +51,10 @@ function SalasContent({ accessKey }: { accessKey: string }) {
     setSaving(true);
     try {
       if (editing) {
-        await panelCrud("update-sala", accessKey, { id: editing.id, ...form });
+        await panelCrud("update-sala", { id: editing.id, ...form });
         toast.success("Sala actualizada");
       } else {
-        await panelCrud("create-sala", accessKey, form);
+        await panelCrud("create-sala", form);
         toast.success("Sala creada");
       }
       setDialogOpen(false);
@@ -66,7 +66,7 @@ function SalasContent({ accessKey }: { accessKey: string }) {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await panelCrud("delete-sala", accessKey, { id: deleteId });
+      await panelCrud("delete-sala", { id: deleteId });
       toast.success("Sala eliminada");
       setDeleteId(null);
       load();

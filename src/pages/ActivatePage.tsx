@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { KeyRound, ArrowRight, Loader2, User, Lock, Eye, EyeOff, CheckCircle2, LogIn } from "lucide-react";
+import { KeyRound, ArrowRight, Loader2, User, Lock, Eye, EyeOff, CheckCircle2, LogIn, Building2, Mail, Phone, Globe, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GestionRoomLogo } from "@/components/GestionRoomLogo";
+import { saveSession } from "@/lib/session";
 
 type Step = "key" | "register" | "has_owner";
 
@@ -17,16 +18,30 @@ export default function ActivatePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Account fields
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Business fields
+  const [bizName, setBizName] = useState("");
+  const [bizEmail, setBizEmail] = useState("");
+  const [bizPhone, setBizPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+
   const inputClasses = "border-white/10 bg-white/5 pl-10 text-white placeholder:text-slate-500 focus-visible:ring-primary";
 
   const handleKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accessKey.trim()) return;
+
+    // Frontend guard: never call backend if empty
+    if (!accessKey.trim()) {
+      setError("Introduce tu clave de acceso.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -43,24 +58,33 @@ export default function ActivatePage() {
       }
 
       if (!data?.valid) {
-        console.error("validate-access-key response:", data);
         const reason = data?.reason;
-        if (reason === "expired") {
+        if (reason === "missing_key") {
+          setError("Introduce tu clave de acceso.");
+        } else if (reason === "expired") {
           setError("Tu suscripción ha expirado. Renuévala en gestionroom.com");
+        } else if (reason === "invalid") {
+          setError("Clave incorrecta. Verifica tu clave o contacta soporte@gestionroom.com");
         } else {
-          setError("Clave incorrecta o sin plan activo. Contacta soporte@gestionroom.com");
+          setError("Error al verificar la clave. Inténtalo de nuevo.");
         }
         setLoading(false);
         return;
       }
 
-      setProfileId(data.profile?.id || data.profile_id);
+      setProfileId(data.profile?.id);
       setCompanyName(data.profile?.company_name || null);
-      localStorage.setItem("gr_access_key", accessKey.trim());
 
-      if (data.has_owner) {
+      // If key already used or owner exists → go to login
+      if (data.key_used || data.has_owner) {
         setStep("has_owner");
       } else {
+        // Pre-fill business name if available
+        if (data.profile?.company_name) setBizName(data.profile.company_name);
+        if (data.profile?.company_email) setBizEmail(data.profile.company_email);
+        if (data.profile?.company_phone) setBizPhone(data.profile.company_phone);
+        if (data.profile?.country) setCountry(data.profile.country);
+        if (data.profile?.city) setCity(data.profile.city);
         setStep("register");
       }
     } catch {
@@ -95,6 +119,11 @@ export default function ActivatePage() {
           username: username.trim(),
           password,
           accessKey: accessKey.trim(),
+          company_name: bizName.trim() || undefined,
+          company_email: bizEmail.trim() || undefined,
+          company_phone: bizPhone.trim() || undefined,
+          country: country.trim() || undefined,
+          city: city.trim() || undefined,
         },
       });
 
@@ -104,7 +133,7 @@ export default function ActivatePage() {
         return;
       }
 
-      if (data?.error === "already_claimed") {
+      if (data?.error === "already_claimed" || data?.error === "already_used") {
         setStep("has_owner");
         setLoading(false);
         return;
@@ -128,9 +157,8 @@ export default function ActivatePage() {
         return;
       }
 
-      // Save session
-      localStorage.setItem("gr_session", JSON.stringify(data.session));
-      localStorage.setItem("gr_panel_activated", "true");
+      // Save session (remember = true for first activation)
+      saveSession(data.session, true);
       navigate("/", { replace: true });
     } catch {
       setError("Error de conexión. Inténtalo de nuevo.");
@@ -155,11 +183,11 @@ export default function ActivatePage() {
                 <div className="relative">
                   <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <Input type="text" placeholder="EmpresaX-123456" value={accessKey}
-                    onChange={(e) => setAccessKey(e.target.value)} disabled={loading}
+                    onChange={(e) => { setAccessKey(e.target.value); if (error) setError(""); }} disabled={loading}
                     className={inputClasses} />
                 </div>
                 {error && <p className="text-xs font-medium text-red-400">{error}</p>}
-                <Button className="w-full" type="submit" disabled={!accessKey.trim() || loading}>
+                <Button className="w-full" type="submit" disabled={loading}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Verificar Clave <ArrowRight className="ml-1.5 h-4 w-4" /></>}
                 </Button>
               </form>
@@ -181,8 +209,9 @@ export default function ActivatePage() {
                 <p className="mb-2 text-center text-lg font-semibold text-white">{companyName}</p>
               )}
               <h2 className="mb-1 text-center text-xl font-semibold text-white">Crear Cuenta de Administrador</h2>
-              <p className="mb-6 text-center text-sm text-slate-400">Crea tu usuario y contraseña para gestionar el panel.</p>
+              <p className="mb-6 text-center text-sm text-slate-400">Crea tu usuario y completa los datos de tu negocio.</p>
               <form onSubmit={handleRegister} className="space-y-4">
+                {/* Account fields */}
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <Input type="text" placeholder="Nombre de usuario" value={username}
@@ -205,6 +234,45 @@ export default function ActivatePage() {
                     onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading}
                     className={inputClasses} autoComplete="new-password" />
                 </div>
+
+                {/* Separator */}
+                <div className="border-t border-white/10 pt-4">
+                  <p className="mb-3 text-xs font-medium uppercase tracking-wider text-slate-500">Datos del negocio</p>
+                </div>
+
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input type="text" placeholder="Nombre de la empresa" value={bizName}
+                    onChange={(e) => setBizName(e.target.value)} disabled={loading}
+                    className={inputClasses} />
+                </div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input type="email" placeholder="Email de contacto" value={bizEmail}
+                    onChange={(e) => setBizEmail(e.target.value)} disabled={loading}
+                    className={inputClasses} />
+                </div>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input type="tel" placeholder="Teléfono" value={bizPhone}
+                    onChange={(e) => setBizPhone(e.target.value)} disabled={loading}
+                    className={inputClasses} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input type="text" placeholder="País" value={country}
+                      onChange={(e) => setCountry(e.target.value)} disabled={loading}
+                      className={inputClasses} />
+                  </div>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input type="text" placeholder="Ciudad" value={city}
+                      onChange={(e) => setCity(e.target.value)} disabled={loading}
+                      className={inputClasses} />
+                  </div>
+                </div>
+
                 {error && <p className="text-xs font-medium text-red-400">{error}</p>}
                 <Button className="w-full" type="submit" disabled={!username || !password || !confirmPassword || loading}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Crear Cuenta <ArrowRight className="ml-1.5 h-4 w-4" /></>}
@@ -220,8 +288,8 @@ export default function ActivatePage() {
           {step === "has_owner" && (
             <div className="text-center space-y-4">
               {companyName && <p className="text-lg font-semibold text-white">{companyName}</p>}
-              <h2 className="text-xl font-semibold text-white">Administrador existente</h2>
-              <p className="text-sm text-slate-400">Esta llave ya tiene un administrador. Identifícate para entrar.</p>
+              <h2 className="text-xl font-semibold text-white">Panel ya activado</h2>
+              <p className="text-sm text-slate-400">Este panel ya tiene un administrador configurado. Inicia sesión para acceder.</p>
               <Button className="w-full" onClick={() => navigate("/login")}>
                 <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión
               </Button>

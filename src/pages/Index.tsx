@@ -4,6 +4,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { RightSidebar } from "@/components/RightSidebar";
 import { KPICards } from "@/components/KPICards";
 import { ReservationsTable } from "@/components/ReservationsTable";
+import { getProfileId } from "@/lib/session";
 import type { DashboardData } from "@/types/dashboard";
 
 const Dashboard = () => {
@@ -12,21 +13,19 @@ const Dashboard = () => {
       title="Dashboard"
       showRightSidebar={<RightSidebarWrapper />}
     >
-      {({ accessKey }) => <DashboardContent accessKey={accessKey} />}
+      {() => <DashboardContent />}
     </DashboardLayout>
   );
 };
 
 function RightSidebarWrapper() {
-  // Will be populated by DashboardContent via shared state - simplified: fetch own data
   const [todayReservations, setTodayReservations] = useState<any[]>([]);
 
   useEffect(() => {
-    const sessionStr = localStorage.getItem("gr_session");
-    const accessKey = sessionStr ? JSON.parse(sessionStr).access_key : localStorage.getItem("gr_access_key");
-    if (!accessKey) return;
+    const profileId = getProfileId();
+    if (!profileId) return;
 
-    supabase.functions.invoke("dashboard-data", { body: { key: accessKey } }).then(({ data }) => {
+    supabase.functions.invoke("dashboard-data", { body: { profileId } }).then(({ data }) => {
       if (data?.todayReservations) setTodayReservations(data.todayReservations);
     });
   }, []);
@@ -34,16 +33,19 @@ function RightSidebarWrapper() {
   return <RightSidebar todayReservations={todayReservations} />;
 }
 
-function DashboardContent({ accessKey }: { accessKey: string }) {
+function DashboardContent() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.functions.invoke("dashboard-data", { body: { key: accessKey } }).then(({ data }) => {
+    const profileId = getProfileId();
+    if (!profileId) return;
+
+    supabase.functions.invoke("dashboard-data", { body: { profileId } }).then(({ data }) => {
       if (data) setDashboardData(data);
       setLoading(false);
     });
-  }, [accessKey]);
+  }, []);
 
   if (loading) {
     return (

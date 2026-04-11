@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { panelCrud } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
+import { getProfileId } from "@/lib/session";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,17 +12,17 @@ import { toast } from "sonner";
 export default function AjustesPage() {
   return (
     <DashboardLayout title="Ajustes">
-      {({ profile, session, accessKey }) => (
+      {({ profile, session }) => (
         <div className="space-y-6 max-w-2xl">
-          <CompanyNameForm accessKey={accessKey} initialName={profile.company_name || ""} />
-          <ChangePasswordForm accessKey={accessKey} username={session.username} />
+          <CompanyNameForm initialName={profile.company_name || ""} />
+          <ChangePasswordForm username={session.username} />
         </div>
       )}
     </DashboardLayout>
   );
 }
 
-function CompanyNameForm({ accessKey, initialName }: { accessKey: string; initialName: string }) {
+function CompanyNameForm({ initialName }: { initialName: string }) {
   const [name, setName] = useState(initialName);
   const [saving, setSaving] = useState(false);
 
@@ -29,7 +30,7 @@ function CompanyNameForm({ accessKey, initialName }: { accessKey: string; initia
     if (!name.trim()) { toast.error("El nombre no puede estar vacío"); return; }
     setSaving(true);
     try {
-      await panelCrud("update-profile", accessKey, { company_name: name.trim() });
+      await panelCrud("update-profile", { company_name: name.trim() });
       toast.success("Nombre actualizado");
     } catch (e: any) { toast.error(e.message); }
     setSaving(false);
@@ -49,7 +50,7 @@ function CompanyNameForm({ accessKey, initialName }: { accessKey: string; initia
   );
 }
 
-function ChangePasswordForm({ accessKey, username }: { accessKey: string; username: string }) {
+function ChangePasswordForm({ username }: { username: string }) {
   const [current, setCurrent] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -61,8 +62,9 @@ function ChangePasswordForm({ accessKey, username }: { accessKey: string; userna
     if (newPw !== confirm) { toast.error("Las contraseñas no coinciden"); return; }
     setSaving(true);
     try {
+      const profileId = getProfileId();
       const { data, error } = await supabase.functions.invoke("panel-auth", {
-        body: { action: "change_password", accessKey, username, currentPassword: current, newPassword: newPw },
+        body: { action: "change_password", profileId, username, currentPassword: current, newPassword: newPw },
       });
       if (error) throw new Error("Error de conexión");
       if (data?.error) throw new Error(data.error === "invalid_credentials" ? "La contraseña actual es incorrecta" : data.error);
