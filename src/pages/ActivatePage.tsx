@@ -7,7 +7,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AuthLayout } from "@/components/AuthLayout";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { saveSession } from "@/lib/session";
 
 type Step = "key" | "register" | "has_owner";
@@ -33,7 +33,7 @@ export default function ActivatePage() {
   const [city, setCity] = useState("");
 
   const inputClasses =
-    "h-11 sm:h-12 bg-[#FAFAFA] border-[#E2E2E2] text-foreground text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-foreground/20";
+    "h-12 bg-[#FAFAFA] border-[#E0E0E0] text-[#1A1A1A] text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-[#1A1A1A]/20";
   const iconClasses =
     "absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#999]";
 
@@ -169,7 +169,7 @@ export default function ActivatePage() {
     <AuthLayout>
       {step === "key" && (
         <>
-          <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">
+          <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-[#1A1A1A]">
             Activa tu Panel
           </h2>
           <p className="mb-6 text-center text-[13px] text-[#888]">
@@ -200,7 +200,7 @@ export default function ActivatePage() {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline"
+              className="text-[13px] text-[#999] underline-offset-4 hover:text-[#1A1A1A] hover:underline"
             >
               Ya tengo cuenta — Iniciar sesión
             </button>
@@ -215,9 +215,9 @@ export default function ActivatePage() {
             <span className="text-[13px] font-medium text-emerald-700">Clave verificada</span>
           </div>
           {companyName && (
-            <p className="mb-2 text-center text-lg sm:text-xl font-semibold text-foreground">{companyName}</p>
+            <p className="mb-2 text-center text-lg sm:text-xl font-semibold text-[#1A1A1A]">{companyName}</p>
           )}
-          <h2 className="mb-1 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">
+          <h2 className="mb-1 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-[#1A1A1A]">
             Crear Cuenta de Administrador
           </h2>
           <p className="mb-6 text-center text-[13px] text-[#888]">
@@ -236,7 +236,7 @@ export default function ActivatePage() {
                 onChange={(e) => setPassword(e.target.value)} disabled={loading}
                 className={inputClasses + " pr-10"} autoComplete="new-password" />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-foreground">
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#1A1A1A]">
                 {showPassword ? <EyeOff className="h-[18px] w-[18px]" strokeWidth={1.5} /> : <Eye className="h-[18px] w-[18px]" strokeWidth={1.5} />}
               </button>
             </div>
@@ -295,15 +295,15 @@ export default function ActivatePage() {
           </form>
           <div className="mt-6 text-center">
             <button type="button" onClick={() => { setStep("key"); setError(""); }}
-              className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline">← Usar otra clave</button>
+              className="text-[13px] text-[#999] underline-offset-4 hover:text-[#1A1A1A] hover:underline">← Usar otra clave</button>
           </div>
         </>
       )}
 
       {step === "has_owner" && (
         <div className="text-center space-y-4">
-          {companyName && <p className="text-lg sm:text-xl font-semibold text-foreground">{companyName}</p>}
-          <h2 className="text-lg sm:text-xl font-semibold tracking-[-0.01em] text-foreground">Panel ya activado</h2>
+          {companyName && <p className="text-lg sm:text-xl font-semibold text-[#1A1A1A]">{companyName}</p>}
+          <h2 className="text-lg sm:text-xl font-semibold tracking-[-0.01em] text-[#1A1A1A]">Panel ya activado</h2>
           <p className="text-[13px] text-[#888]">Este panel ya tiene un administrador configurado. Inicia sesión para acceder.</p>
           <Button
             className="w-full h-12 text-[15px] font-medium rounded-lg active:scale-[0.98] transition-all"
@@ -312,7 +312,7 @@ export default function ActivatePage() {
             <LogIn className="mr-2 h-4 w-4" /> Iniciar Sesión
           </Button>
           <button type="button" onClick={() => { setStep("key"); setError(""); }}
-            className="text-[13px] text-[#999] underline-offset-4 hover:text-foreground hover:underline">← Usar otra clave</button>
+            className="text-[13px] text-[#999] underline-offset-4 hover:text-[#1A1A1A] hover:underline">← Usar otra clave</button>
         </div>
       )}
     </AuthLayout>
