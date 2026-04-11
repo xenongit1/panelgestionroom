@@ -1,10 +1,10 @@
 export function AuthBrand() {
   return (
     <div className="mb-6 sm:mb-8 flex flex-col items-center text-center">
-      <img src="/logo-mark-dark.svg" alt="GestionRoom" className="h-20 w-20 sm:h-24 sm:w-24 object-contain" />
+      <img src="/logo-mark-dark.svg" alt="GestionRoom" className="h-18 w-18 sm:h-20 sm:w-20 object-contain" />
 
       <div className="mt-4 flex flex-col items-center">
-        <span className="font-sans text-[36px] leading-none sm:text-[42px] font-semibold tracking-[-0.055em] text-[#111111]">
+        <span className="font-sans text-[34px] leading-none sm:text-[40px] font-semibold tracking-[-0.055em] text-[#111111]">
           GestionRoom
         </span>
 
