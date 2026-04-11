@@ -194,6 +194,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          key_used: boolean | null
           owner_name: string | null
           plan_status: string | null
           plan_type: string
@@ -212,6 +213,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id: string
+          key_used?: boolean | null
           owner_name?: string | null
           plan_status?: string | null
           plan_type?: string
@@ -230,6 +232,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          key_used?: boolean | null
           owner_name?: string | null
           plan_status?: string | null
           plan_type?: string
@@ -500,6 +503,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          key_used: boolean | null
           owner_name: string | null
           plan_status: string | null
           plan_type: string

@@ -5,18 +5,11 @@ import { LeftSidebar } from "@/components/LeftSidebar";
 import { TopBar } from "@/components/TopBar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { getSession, clearSession, type SessionData } from "@/lib/session";
 import type { Profile } from "@/types/dashboard";
 
-interface SessionData {
-  panel_user_id: string;
-  profile_id: string;
-  username: string;
-  role: string;
-  access_key?: string;
-}
-
 interface DashboardLayoutProps {
-  children: (props: { profile: Profile; session: SessionData; accessKey: string }) => ReactNode;
+  children: (props: { profile: Profile; session: SessionData }) => ReactNode;
   title?: string;
   showRightSidebar?: ReactNode;
 }
@@ -29,49 +22,35 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const sessionStr = localStorage.getItem("gr_session");
-    if (!sessionStr) {
-      const activated = localStorage.getItem("gr_panel_activated");
-      navigate(activated ? "/login" : "/activate", { replace: true });
-      return;
-    }
-
-    let parsed: SessionData;
-    try {
-      parsed = JSON.parse(sessionStr);
-    } catch {
-      localStorage.removeItem("gr_session");
-      navigate("/activate", { replace: true });
-      return;
-    }
-
-    if (!parsed.profile_id || !parsed.username) {
-      localStorage.removeItem("gr_session");
-      navigate("/activate", { replace: true });
-      return;
-    }
-
-    const accessKey = parsed.access_key || localStorage.getItem("gr_access_key");
-    if (!accessKey) {
-      navigate("/activate", { replace: true });
+    const currentSession = getSession();
+    if (!currentSession || !currentSession.profile_id || !currentSession.panel_user_id) {
+      navigate("/login", { replace: true });
       return;
     }
 
     const init = async () => {
-      const { data: valData } = await supabase.functions.invoke("validate-access-key", {
-        body: { key: accessKey },
-      });
+      try {
+        const { data, error } = await supabase.functions.invoke("panel-auth", {
+          body: {
+            action: "validate_session",
+            profile_id: currentSession.profile_id,
+            panel_user_id: currentSession.panel_user_id,
+          },
+        });
 
-      if (!valData?.valid) {
-        localStorage.removeItem("gr_panel_activated");
-        localStorage.removeItem("gr_access_key");
-        localStorage.removeItem("gr_session");
-        navigate("/activate", { replace: true });
+        if (error || !data?.valid) {
+          clearSession();
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setProfile(data.profile);
+        setSession(currentSession);
+      } catch {
+        clearSession();
+        navigate("/login", { replace: true });
         return;
       }
-
-      setProfile(valData.profile);
-      setSession(parsed);
       setLoading(false);
     };
 
@@ -79,9 +58,7 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("gr_session");
-    localStorage.removeItem("gr_panel_activated");
-    localStorage.removeItem("gr_access_key");
+    clearSession();
     navigate("/login", { replace: true });
   };
 
@@ -98,8 +75,6 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
 
   if (!profile || !session) return null;
 
-  const accessKey = session.access_key || localStorage.getItem("gr_access_key") || "";
-
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <LeftSidebar
@@ -112,7 +87,7 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
         <div className={cn(contentLayout === "centered" && "max-w-6xl mx-auto")}>
           <TopBar profile={profile} title={title} onLogout={handleLogout} />
           <div className="space-y-6">
-            {children({ profile, session, accessKey })}
+            {children({ profile, session })}
           </div>
         </div>
       </main>

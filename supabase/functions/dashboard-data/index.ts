@@ -12,11 +12,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { key } = await req.json();
+    const { profileId } = await req.json();
 
-    if (!key) {
+    if (!profileId) {
       return new Response(
-        JSON.stringify({ error: "Missing access key" }),
+        JSON.stringify({ error: "Missing profileId" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -26,24 +26,21 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get profile by key
+    // Verify profile has valid plan
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id")
-      .eq("access_key", key)
+      .eq("id", profileId)
       .in("plan_status", ["pro", "anual", "active"])
       .maybeSingle();
 
     if (profileError || !profile) {
       return new Response(
-        JSON.stringify({ error: "Invalid key" }),
+        JSON.stringify({ error: "Invalid profile" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const profileId = profile.id;
-
-    // Fetch all data in parallel
     const [salasRes, gmsRes, reservasRes, todayReservasRes, totalReservasRes] = await Promise.all([
       supabase.from("salas").select("*").eq("profile_id", profileId),
       supabase.from("game_masters").select("*").eq("profile_id", profileId),
@@ -79,13 +76,7 @@ Deno.serve(async (req) => {
     };
 
     return new Response(
-      JSON.stringify({
-        kpis,
-        reservations,
-        todayReservations,
-        salas,
-        gameMasters,
-      }),
+      JSON.stringify({ kpis, reservations, todayReservations, salas, gameMasters }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

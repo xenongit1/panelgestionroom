@@ -26,12 +26,12 @@ const emptyForm = { client_name: "", sala_id: "", date: "", time: "", game_maste
 export default function ReservasPage() {
   return (
     <DashboardLayout title="Reservas">
-      {({ accessKey }) => <ReservasContent accessKey={accessKey} />}
+      {() => <ReservasContent />}
     </DashboardLayout>
   );
 }
 
-function ReservasContent({ accessKey }: { accessKey: string }) {
+function ReservasContent() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [gms, setGms] = useState<GameMaster[]>([]);
@@ -46,16 +46,16 @@ function ReservasContent({ accessKey }: { accessKey: string }) {
   const load = useCallback(async () => {
     try {
       const [rRes, sRes, gmRes] = await Promise.all([
-        panelCrud("list-reservas", accessKey),
-        panelCrud("list-salas", accessKey),
-        panelCrud("list-game-masters", accessKey),
+        panelCrud("list-reservas"),
+        panelCrud("list-salas"),
+        panelCrud("list-game-masters"),
       ]);
       setReservas(rRes.data || []);
       setSalas(sRes.data || []);
       setGms(gmRes.data || []);
     } catch { toast.error("Error al cargar datos"); }
     setLoading(false);
-  }, [accessKey]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -83,10 +83,10 @@ function ReservasContent({ accessKey }: { accessKey: string }) {
     try {
       const payload = { ...form, game_master_id: form.game_master_id || null };
       if (editing) {
-        await panelCrud("update-reserva", accessKey, { id: editing.id, ...payload });
+        await panelCrud("update-reserva", { id: editing.id, ...payload });
         toast.success("Reserva actualizada");
       } else {
-        await panelCrud("create-reserva", accessKey, payload);
+        await panelCrud("create-reserva", payload);
         toast.success("Reserva creada");
       }
       setDialogOpen(false);
@@ -98,7 +98,7 @@ function ReservasContent({ accessKey }: { accessKey: string }) {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await panelCrud("delete-reserva", accessKey, { id: deleteId });
+      await panelCrud("delete-reserva", { id: deleteId });
       toast.success("Reserva eliminada");
       setDeleteId(null);
       load();

@@ -10,7 +10,7 @@ const corsHeaders = {
 const USERNAME_REGEX = /^[a-z0-9_]+$/;
 const MAX_USERNAME_LENGTH = 50;
 const MAX_PASSWORD_LENGTH = 128;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
 function sanitizeUsername(raw: string): string | null {
@@ -22,6 +22,13 @@ function sanitizeUsername(raw: string): string | null {
 
 function validatePassword(raw: string): boolean {
   return typeof raw === "string" && raw.length >= 6 && raw.length <= MAX_PASSWORD_LENGTH;
+}
+
+function jsonResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -38,8 +45,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // ── REGISTER ──
     if (action === "register") {
-      const { profileId, password, accessKey } = body;
+      const { profileId, password, accessKey, company_name, company_email, company_phone, country, city } = body;
       const username = sanitizeUsername(body.username || "");
 
       if (!profileId || !username || !password || !accessKey) {
@@ -53,7 +61,7 @@ Deno.serve(async (req) => {
       // Verify access_key belongs to profileId and has valid plan
       const { data: verifiedProfile } = await supabase
         .from("profiles")
-        .select("id")
+        .select("id, key_used")
         .eq("id", profileId)
         .eq("access_key", accessKey)
         .in("plan_status", ["pro", "anual", "active"])
@@ -63,7 +71,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "unauthorized" }, 401);
       }
 
-      // Check if an owner already exists for this profile
+      if (verifiedProfile.key_used) {
+        return jsonResponse({ error: "already_used" });
+      }
+
+      // Check if an owner already exists
       const { data: existing } = await supabase
         .from("panel_users")
         .select("id")
@@ -88,6 +100,7 @@ Deno.serve(async (req) => {
 
       const passwordHash = bcrypt.hashSync(password, 10);
 
+      // Step 1: Insert panel_user
       const { data: newUser, error: insertError } = await supabase
         .from("panel_users")
         .insert({
@@ -104,6 +117,33 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Error de autenticación" }, 500);
       }
 
+      // Step 2: Update profile with business data + key_used = true
+      const profileUpdate: Record<string, any> = { key_used: true };
+      if (company_name) profileUpdate.company_name = String(company_name).trim().slice(0, 100);
+      if (company_email) profileUpdate.company_email = String(company_email).trim().slice(0, 200);
+      if (company_phone) profileUpdate.company_phone = String(company_phone).trim().slice(0, 30);
+      if (country) profileUpdate.country = String(country).trim().slice(0, 60);
+      if (city) profileUpdate.city = String(city).trim().slice(0, 60);
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update(profileUpdate)
+        .eq("id", profileId);
+
+      if (profileError) {
+        console.error("panel-auth profile update error:", profileError);
+        // Rollback: delete the panel_user we just created
+        await supabase.from("panel_users").delete().eq("id", newUser.id);
+        return jsonResponse({ error: "Error de autenticación" }, 500);
+      }
+
+      // Fetch full profile for session
+      const { data: fullProfile } = await supabase
+        .from("profiles")
+        .select("id, email, company_name, company_email, company_phone, country, city, plan_status, plan_type, subscription_end, owner_name")
+        .eq("id", profileId)
+        .single();
+
       return jsonResponse({
         success: true,
         session: {
@@ -112,9 +152,11 @@ Deno.serve(async (req) => {
           username: newUser.username,
           role: newUser.role,
         },
+        profile: fullProfile,
       });
     }
 
+    // ── LOGIN ──
     if (action === "login") {
       const username = sanitizeUsername(body.username || "");
       const password = body.password;
@@ -127,9 +169,8 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "invalid_credentials" });
       }
 
-      // --- Rate Limiting ---
+      // Rate Limiting
       const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-
       const { count } = await supabase
         .from("validation_attempts")
         .select("*", { count: "exact", head: true })
@@ -137,13 +178,9 @@ Deno.serve(async (req) => {
         .gte("attempted_at", windowStart);
 
       if ((count ?? 0) >= MAX_ATTEMPTS) {
-        return jsonResponse(
-          { error: "Demasiados intentos. Espera 10 minutos." },
-          429
-        );
+        return jsonResponse({ error: "Demasiados intentos. Espera 10 minutos." }, 429);
       }
 
-      // --- Credentials check ---
       const { data: user, error } = await supabase
         .from("panel_users")
         .select("id, profile_id, username, password_hash, role")
@@ -151,31 +188,29 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (error || !user) {
-        // Record failed attempt
         await supabase.from("validation_attempts").insert({ ip_address: username });
         return jsonResponse({ error: "invalid_credentials" });
       }
 
       const valid = bcrypt.compareSync(password, user.password_hash);
       if (!valid) {
-        // Record failed attempt
         await supabase.from("validation_attempts").insert({ ip_address: username });
         return jsonResponse({ error: "invalid_credentials" });
       }
 
-      // --- Successful login: clean up old attempts ---
+      // Clean up old attempts
       await supabase
         .from("validation_attempts")
         .delete()
         .eq("ip_address", username)
         .lt("attempted_at", new Date(Date.now() - 3600000).toISOString());
 
-      // Fetch access_key from profile
+      // Fetch profile data for the session
       const { data: profile } = await supabase
         .from("profiles")
-        .select("access_key")
+        .select("id, email, company_name, company_email, company_phone, country, city, plan_status, plan_type, subscription_end, owner_name")
         .eq("id", user.profile_id)
-        .maybeSingle();
+        .single();
 
       return jsonResponse({
         success: true,
@@ -184,16 +219,50 @@ Deno.serve(async (req) => {
           profile_id: user.profile_id,
           username: user.username,
           role: user.role,
-          access_key: profile?.access_key || null,
         },
+        profile,
       });
     }
 
+    // ── VALIDATE SESSION ──
+    if (action === "validate_session") {
+      const { profile_id, panel_user_id } = body;
+
+      if (!profile_id || !panel_user_id) {
+        return jsonResponse({ error: "missing_fields" }, 400);
+      }
+
+      const { data: panelUser } = await supabase
+        .from("panel_users")
+        .select("id, profile_id, username, role")
+        .eq("id", panel_user_id)
+        .eq("profile_id", profile_id)
+        .maybeSingle();
+
+      if (!panelUser) {
+        return jsonResponse({ error: "invalid_session" }, 401);
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, email, company_name, company_email, company_phone, country, city, plan_status, plan_type, subscription_end, owner_name")
+        .eq("id", profile_id)
+        .in("plan_status", ["pro", "anual", "active"])
+        .single();
+
+      if (!profile) {
+        return jsonResponse({ error: "expired_plan" }, 403);
+      }
+
+      return jsonResponse({ valid: true, profile });
+    }
+
+    // ── CHANGE PASSWORD ──
     if (action === "change_password") {
       const username = sanitizeUsername(body.username || "");
-      const { accessKey, currentPassword, newPassword } = body;
+      const { profileId, currentPassword, newPassword } = body;
 
-      if (!username || !accessKey || !currentPassword || !newPassword) {
+      if (!username || !profileId || !currentPassword || !newPassword) {
         return jsonResponse({ error: "missing_fields" }, 400);
       }
 
@@ -201,11 +270,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "invalid_credentials" });
       }
 
-      // Validate access key
+      // Verify profile exists with valid plan
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
-        .eq("access_key", accessKey)
+        .eq("id", profileId)
         .in("plan_status", ["pro", "anual", "active"])
         .maybeSingle();
 
@@ -213,12 +282,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "unauthorized" }, 401);
       }
 
-      // Get user
       const { data: user } = await supabase
         .from("panel_users")
         .select("id, password_hash")
         .eq("username", username)
-        .eq("profile_id", profile.id)
+        .eq("profile_id", profileId)
         .maybeSingle();
 
       if (!user) {
@@ -250,10 +318,3 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: "Ha ocurrido un error en el servidor" }, 500);
   }
 });
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}

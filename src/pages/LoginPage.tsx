@@ -4,13 +4,16 @@ import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { GestionRoomLogo } from "@/components/GestionRoomLogo";
+import { saveSession } from "@/lib/session";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -42,11 +45,7 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem("gr_session", JSON.stringify(data.session));
-      localStorage.setItem("gr_panel_activated", "true");
-      if (data.session.access_key) {
-        localStorage.setItem("gr_access_key", data.session.access_key);
-      }
+      saveSession(data.session, remember);
       navigate("/", { replace: true });
     } catch {
       setError("Error de conexión. Inténtalo de nuevo.");
@@ -84,6 +83,19 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="remember"
+                checked={remember}
+                onCheckedChange={(v) => setRemember(v === true)}
+                className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <label htmlFor="remember" className="text-xs text-slate-400 cursor-pointer select-none">
+                Mantener sesión iniciada
+              </label>
+            </div>
+
             {error && <p className="text-xs font-medium text-red-400">{error}</p>}
             <Button className="w-full" type="submit" disabled={!username || !password || loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Entrar al Panel <ArrowRight className="ml-1.5 h-4 w-4" /></>}
