@@ -1,5 +1,3 @@
-import { GestionRoomLogo } from "@/components/GestionRoomLogo";
-
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
@@ -16,8 +14,20 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       }}
     >
       <div className="w-full max-w-[480px] animate-in">
-        <div className="mb-8 flex justify-center">
-          <GestionRoomLogo variant="light" size="lg" />
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <img
+            src="/logo-mark-dark.svg"
+            alt="GestionRoom"
+            className="h-16 w-16 object-contain"
+          />
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              GestionRoom
+            </span>
+            <span className="text-xs leading-none text-muted-foreground">
+              Panel de Control
+            </span>
+          </div>
         </div>
 
         <div className="rounded-2xl border bg-white p-10" style={{
