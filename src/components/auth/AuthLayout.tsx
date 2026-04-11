@@ -22,8 +22,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <div
           className="w-full rounded-[28px] border bg-white px-6 py-7 sm:px-10 sm:py-10"
           style={{
-            borderColor: "#E7E5E4",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+            borderColor: "#E5E3E0",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.05), 0 2px 10px rgba(0,0,0,0.03)",
           }}
         >
           {children}
