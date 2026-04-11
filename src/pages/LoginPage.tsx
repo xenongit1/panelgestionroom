@@ -55,18 +55,22 @@ export default function LoginPage() {
   };
 
   const inputClasses =
-    "h-12 bg-[#FAFAFA] border-[#E0E0E0] text-[#1A1A1A] text-[14px] placeholder:text-[#A0A0A0] pl-11 rounded-lg focus-visible:ring-[#1A1A1A]/20";
-  const iconClasses =
-    "absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#999]";
+    "h-14 bg-[#FBFBFA] border-[#DCDAD7] text-[#111111] text-[15px] placeholder:text-[#9A9A9A] pl-12 rounded-xl shadow-none focus-visible:ring-[3px] focus-visible:ring-black/5 focus-visible:border-[#111111]";
+
+  const iconClasses = "absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#9C9C9C]";
+
+  const canSubmit = username.trim().length > 0 && password.length > 0 && !loading;
 
   return (
     <AuthLayout>
-      <h2 className="mb-2 text-center text-lg sm:text-xl font-semibold tracking-[-0.01em] text-[#1A1A1A]">
+      <h2 className="mb-3 text-center text-[30px] leading-[1.05] sm:text-[34px] font-semibold tracking-[-0.045em] text-[#111111]">
         Iniciar Sesión
       </h2>
-      <p className="mb-6 text-center text-[13px] text-[#888]">
+
+      <p className="mx-auto mb-8 max-w-[30ch] text-center text-[15px] leading-6 text-[#66615C]">
         Accede a tu panel de control.
       </p>
+
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="relative">
           <User className={iconClasses} strokeWidth={1.5} />
@@ -80,6 +84,7 @@ export default function LoginPage() {
             autoComplete="username"
           />
         </div>
+
         <div className="relative">
           <Lock className={iconClasses} strokeWidth={1.5} />
           <Input
@@ -88,13 +93,13 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
-            className={inputClasses + " pr-10"}
+            className={inputClasses + " pr-11"}
             autoComplete="current-password"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#1A1A1A]"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9C9C9C] hover:text-[#111111]"
           >
             {showPassword ? (
               <EyeOff className="h-[18px] w-[18px]" strokeWidth={1.5} />
@@ -104,41 +109,41 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 pt-1">
           <Checkbox
             id="remember"
             checked={remember}
             onCheckedChange={(v) => setRemember(v === true)}
-            className="border-[#D0D0D0] data-[state=checked]:bg-[#1A1A1A] data-[state=checked]:border-[#1A1A1A]"
+            className="border-[#D0D0D0] data-[state=checked]:bg-[#111111] data-[state=checked]:border-[#111111]"
           />
-          <label
-            htmlFor="remember"
-            className="text-[13px] text-[#777] cursor-pointer select-none"
-          >
+          <label htmlFor="remember" className="text-[14px] font-medium text-[#6F6F6F] cursor-pointer select-none">
             Mantener sesión iniciada
           </label>
         </div>
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-red-500">{error}</p>}
+
         <Button
-          className="w-full h-14 rounded-xl text-[15px] font-medium tracking-[-0.01em] transition-all disabled:opacity-100 disabled:bg-[#B8B8B8] disabled:text-white"
+          className="w-full h-14 rounded-xl text-[15px] font-medium tracking-[-0.01em] transition-all active:scale-[0.985] disabled:opacity-100 disabled:bg-[#BEBBB7] disabled:text-white"
           type="submit"
-          disabled={!username || !password || loading}
+          disabled={!canSubmit}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              Entrar al Panel <ArrowRight className="ml-1.5 h-4 w-4" />
+              Entrar al Panel
+              <ArrowRight className="ml-1.5 h-4 w-4" />
             </>
           )}
         </Button>
       </form>
+
       <div className="mt-8 text-center">
         <button
           type="button"
           onClick={() => navigate("/activate")}
-          className="text-[13px] text-[#999] underline-offset-4 hover:text-[#1A1A1A] hover:underline"
+          className="text-[14px] font-medium text-[#8D8D8D] underline-offset-4 hover:text-[#111111] hover:underline"
         >
           Activar nuevo panel
         </button>
