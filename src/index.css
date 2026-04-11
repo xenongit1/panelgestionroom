@@ -67,10 +67,18 @@
     @apply border-border;
   }
 
-  body {
-    font-family: "Geist", sans-serif !important;
+  html,
+  body,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: "Geist", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
     @apply bg-background text-foreground;
     background-image:
       linear-gradient(to right, #f0f0f0 1px, transparent 1px),
