@@ -1,25 +1,28 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { LeftSidebar } from "@/components/LeftSidebar";
+import { LeftSidebar, MobileNavContent } from "@/components/LeftSidebar";
 import { TopBar } from "@/components/TopBar";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { getSession, clearSession, type SessionData } from "@/lib/session";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import type { Profile } from "@/types/dashboard";
 
 interface DashboardLayoutProps {
   children: (props: { profile: Profile; session: SessionData }) => ReactNode;
   title?: string;
-  showRightSidebar?: ReactNode;
 }
 
-export function DashboardLayout({ children, title = "Dashboard", showRightSidebar }: DashboardLayoutProps) {
+export function DashboardLayout({ children, title = "Dashboard" }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const { contentLayout } = useTheme();
+  const isMobile = useIsMobile();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const currentSession = getSession();
@@ -77,21 +80,45 @@ export function DashboardLayout({ children, title = "Dashboard", showRightSideba
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <LeftSidebar
-        username={session.username}
-        companyName={profile.company_name}
-        ownerName={(profile as any).owner_name}
-        email={profile.email}
-      />
-      <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <LeftSidebar
+          username={session.username}
+          companyName={profile.company_name}
+          ownerName={(profile as any).owner_name}
+          email={profile.email}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      {isMobile && (
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent side="left" className="w-[280px] p-0">
+            <MobileNavContent
+              onNavigate={(path) => {
+                navigate(path);
+                setMobileMenuOpen(false);
+              }}
+              onLogout={handleLogout}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      <main className="flex-1 overflow-y-auto p-4 lg:p-8">
         <div className={cn(contentLayout === "centered" && "max-w-6xl mx-auto")}>
-          <TopBar profile={profile} title={title} onLogout={handleLogout} />
-          <div className="space-y-6">
+          <TopBar
+            profile={profile}
+            title={title}
+            onLogout={handleLogout}
+            onMenuOpen={isMobile ? () => setMobileMenuOpen(true) : undefined}
+          />
+          <div className="space-y-5">
             {children({ profile, session })}
           </div>
         </div>
       </main>
-      {showRightSidebar}
     </div>
   );
 }
