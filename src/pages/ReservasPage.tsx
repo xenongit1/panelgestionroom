@@ -351,3 +351,52 @@ function MobileReservaCard({ reserva: r, onDetail, onEdit, onCancel }: RowProps)
     </div>
   );
 }
+
+/* ── Shared form fields ── */
+function ReservaFormFields({ form, setForm, salas, gms }: { form: typeof emptyForm; setForm: (f: typeof emptyForm) => void; salas: Sala[]; gms: GameMaster[] }) {
+  return (
+    <div className="space-y-4">
+      <div><Label>Cliente *</Label><Input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} /></div>
+      <div className="grid grid-cols-2 gap-4">
+        <div><Label>Email</Label><Input type="email" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} placeholder="email@ejemplo.com" /></div>
+        <div><Label>Teléfono</Label><Input type="tel" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} placeholder="+34 600..." /></div>
+      </div>
+      <div><Label>Sala *</Label>
+        <Select value={form.sala_id} onValueChange={(v) => setForm({ ...form, sala_id: v })}>
+          <SelectTrigger><SelectValue placeholder="Seleccionar sala" /></SelectTrigger>
+          <SelectContent>{salas.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div><Label>Fecha *</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+        <div><Label>Hora *</Label><Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} /></div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div><Label>Game Master</Label>
+          <Select value={form.game_master_id || "none"} onValueChange={(v) => setForm({ ...form, game_master_id: v === "none" ? "" : v })}>
+            <SelectTrigger><SelectValue placeholder="Sin asignar" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sin asignar</SelectItem>
+              {gms.map((gm) => <SelectItem key={gm.id} value={gm.id}>{gm.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div><Label>Jugadores</Label><Input type="number" min={1} max={50} value={form.players} onChange={(e) => setForm({ ...form, players: Number(e.target.value) })} /></div>
+      </div>
+      <div><Label>Estado</Label>
+        <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pendiente">Pendiente</SelectItem>
+            <SelectItem value="confirmada">Confirmada</SelectItem>
+            <SelectItem value="cancelada">Cancelada</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label>Notas internas</Label>
+        <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Comentario interno del staff..." rows={2} maxLength={500} className="resize-none" />
+      </div>
+    </div>
+  );
+}
