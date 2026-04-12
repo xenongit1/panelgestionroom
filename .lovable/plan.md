@@ -1,76 +1,87 @@
 
 
-## Plan: Rebuild Auth Visual System
+## Plan: Dashboard Operativo Real (Revisado)
 
 ### Summary
 
-Complete visual rebuild of the auth module. New dedicated `AuthBrand` component, rebuilt `AuthLayout`, and visual polish on all auth pages. Zero logic changes.
+Four functional additions: slot blocking, monthly analytics, next-session widget, and occupation calendar. One DB migration, edge function updates, and new UI components.
 
 ---
 
-### Files
+### 1. Database Migration
 
-#### 1. `src/components/auth/AuthBrand.tsx` — NEW
+Add `notes` text column to `reservas` — general-purpose internal comments, usable on any reservation type:
 
-Dedicated brand block for auth screens only (not reusing sidebar logo):
-
-```
-<img> logo-mark-dark.svg
-<span> "GestionRoom"
-<span> "Panel de Control"
+```sql
+ALTER TABLE public.reservas ADD COLUMN IF NOT EXISTS notes text;
 ```
 
-- Mobile: logo `h-14 w-14`, title `text-[28px] font-semibold tracking-[-0.03em]`, subtitle `text-[11px] uppercase tracking-[0.14em] text-[#8F8F8F]`
-- Desktop: logo `sm:h-16 sm:w-16`, title `sm:text-[30px]`
-- Gap between logo and text: `gap-3`
-- All text colors hardcoded (no `text-foreground` that could inherit white)
-- Title: `text-[#1A1A1A]`, subtitle: `text-[#8F8F8F]`
-
-#### 2. `src/components/auth/AuthLayout.tsx` — NEW (replaces old `src/components/AuthLayout.tsx`)
-
-Shared wrapper for all auth screens:
-
-- Outer: `min-h-[100dvh]`, centered flex, `p-5 sm:p-6`, `font-sans` class forced
-- Inline style: `fontFamily: "'Geist', system-ui, sans-serif"` as belt-and-suspenders
-- Background: `#F7F7F8` + subtle radial dot pattern (`rgba(0,0,0,0.03)`, `30px 30px`)
-- Renders `<AuthBrand />` above the card
-- Card: `max-w-[500px]`, `bg-white`, `rounded-2xl`, `p-6 sm:p-10`, border `#E8E8E8`, shadow `0 2px 12px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)`
-- Brand block margin-bottom: `mb-8`
-
-#### 3. `src/pages/LoginPage.tsx` — UPDATE
-
-- Import from `@/components/auth/AuthLayout` (new path)
-- Headings: hardcoded `text-[#1A1A1A]` instead of `text-foreground`
-- Subtitles: `text-[#888]` (already correct)
-- Input classes: `h-12` (uniform, no sm variant), `bg-[#FAFAFA]`, `border-[#E0E0E0]`, `text-[#1A1A1A]`, `placeholder:text-[#A0A0A0]`, `pl-11`, `rounded-lg`
-- Button: unchanged (already premium)
-- "Mantener sesion" label: `text-[#777]`
-- Secondary link: `text-[#999]`
-
-#### 4. `src/pages/ActivatePage.tsx` — UPDATE
-
-- Import from `@/components/auth/AuthLayout`
-- Same input/heading color fixes as LoginPage
-- All `text-foreground` on headings/labels replaced with `text-[#1A1A1A]`
-- Section divider text: `text-[#999]`
-- Verified badge: keep emerald styling (explicit colors, safe)
-- Company name display: `text-[#1A1A1A]`
-
-#### 5. `src/index.css` — No changes needed
-
-Already has Geist on html/body/button/input/textarea/select with antialiasing and optimizeLegibility.
-
-#### 6. `tailwind.config.ts` — No changes needed
-
-Already has `fontFamily.sans: ['Geist', ...]`.
-
-#### 7. `src/components/AuthLayout.tsx` — DELETE (old file)
-
-Replaced by `src/components/auth/AuthLayout.tsx`.
+No other schema changes. `status = 'bloqueado'` uses the existing text column.
 
 ---
+
+### 2. Blockout Model ("Cerrar Hora")
+
+- A blocked slot = a reserva with `status = 'bloqueado'`.
+- `client_name` is set to a default like `'Bloqueado'` for display only — **all logic checks `status` only**, never `client_name`.
+- The UI renders blocked slots with a distinct badge/style based on `status === 'bloqueado'`.
+
+**Duplicate prevention in `block-slot` action** (panel-crud):
+Before inserting, query `reservas` for any existing row matching `sala_id + date + time` where `status != 'cancelada'`. If found, return `{ error: "slot_occupied" }` with 409 status. No duplicates, no blocking over real reservations.
+
+**panel-crud changes**:
+- New action `"block-slot"`: requires `sala_id`, `date`, `time`. Validates no conflict, then inserts with `status: 'bloqueado'`, `client_name: 'Bloqueado'`, `players: 0`.
+- Add `"bloqueado"` to allowed status list in `create-reserva` and `update-reserva`.
+
+---
+
+### 3. Edge Function: `dashboard-data` Expansion
+
+Add three new data blocks to the response:
+
+- **monthlyStats**: Count reservas this month (excluding `cancelada` and `bloqueado`):
+  - `totalGroups`: count
+  - `estimatedRevenue`: `sum(players) * 20` — hardcoded provisional price, clearly commented
+  - `occupationEstimate`: `(reservas count) / (active rooms * days in month)` as percentage — **labeled "estimada" in the response** so the UI can mark it as provisional
+
+- **nextSession**: First reserva today where `time >= now` and `status NOT IN ('cancelada', 'bloqueado')`, with sala name and notes field
+
+- **weeklyOccupation**: For each of the next 14 days, `{ date, count, capacity }` where capacity = active rooms count
+
+---
+
+### 4. New Frontend Components
+
+| Component | Description |
+|---|---|
+| `src/components/dashboard/MonthlyKPIs.tsx` | Three cards: estimated revenue (with "Estimado" label), groups this month, occupation % (with "Estimada" badge). Premium card style. |
+| `src/components/dashboard/NextSessionWidget.tsx` | Live countdown "Próximo grupo en HH:MM", client name, room, notes. Empty state when no sessions pending. |
+| `src/components/dashboard/OccupationCalendar.tsx` | 7-column grid, 2 weeks. Color dots: green (>70%), yellow (30-70%), gray (<30%). |
+| `src/components/dashboard/BlockSlotDialog.tsx` | Dialog with sala selector + time picker. Date defaults to today. Calls `block-slot`. Shows error on conflict (409). |
+
+---
+
+### 5. Updated Files Summary
+
+| File | Change |
+|---|---|
+| DB migration | Add `notes` column to `reservas` |
+| `supabase/functions/dashboard-data/index.ts` | Add monthlyStats, nextSession, weeklyOccupation |
+| `supabase/functions/panel-crud/index.ts` | Add `block-slot` with conflict check, expand status whitelist |
+| `src/types/dashboard.ts` | Add MonthlyStats, NextSession, WeeklyDay types |
+| `src/pages/Index.tsx` | Compose new widgets into layout |
+| `src/components/RightSidebar.tsx` | Add NextSessionWidget |
+| 4 new component files | As listed above |
+
+---
+
+### What stays provisional (clearly marked)
+
+- **Revenue**: `players * 20€` hardcoded. Needs real pricing later.
+- **Occupation rate**: simplified formula, labeled "Estimada" in UI and API response. Needs real time-slot capacity model.
+- **Countdown**: client-side, browser timezone.
 
 ### What does NOT change
 
-All state, handlers, API calls, edge functions, routing, session logic, GestionRoomLogo.tsx, sidebar, dashboard.
+Auth, session, sidebar nav, Game Masters, Salas, Reservas pages, Activate/Login pages.
 
