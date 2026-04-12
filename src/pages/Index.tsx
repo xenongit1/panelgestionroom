@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { RightSidebar } from "@/components/RightSidebar";
 import { KPICards } from "@/components/KPICards";
 import { ReservationsTable } from "@/components/ReservationsTable";
-import { MonthlyKPIs } from "@/components/dashboard/MonthlyKPIs";
+import { NextSessionWidget } from "@/components/dashboard/NextSessionWidget";
 import { OccupationCalendar } from "@/components/dashboard/OccupationCalendar";
 import { BlockSlotDialog } from "@/components/dashboard/BlockSlotDialog";
 import { getProfileId } from "@/lib/session";
@@ -12,31 +11,11 @@ import type { DashboardData } from "@/types/dashboard";
 
 const Dashboard = () => {
   return (
-    <DashboardLayout
-      title="Dashboard"
-      showRightSidebar={<RightSidebarWrapper />}
-    >
+    <DashboardLayout title="Dashboard">
       {() => <DashboardContent />}
     </DashboardLayout>
   );
 };
-
-function RightSidebarWrapper() {
-  const [todayReservations, setTodayReservations] = useState<any[]>([]);
-  const [nextSession, setNextSession] = useState<any>(null);
-
-  useEffect(() => {
-    const profileId = getProfileId();
-    if (!profileId) return;
-
-    supabase.functions.invoke("dashboard-data", { body: { profileId } }).then(({ data }) => {
-      if (data?.todayReservations) setTodayReservations(data.todayReservations);
-      if (data?.nextSession !== undefined) setNextSession(data.nextSession);
-    });
-  }, []);
-
-  return <RightSidebar todayReservations={todayReservations} nextSession={nextSession} />;
-}
 
 function DashboardContent() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -65,24 +44,25 @@ function DashboardContent() {
   }
 
   return (
-    <>
-      {/* Action bar */}
-      <div className="flex items-center justify-end">
+    <div className="space-y-5">
+      {/* Mobile-first ordering via CSS order */}
+      <div className="order-1">
+        <NextSessionWidget session={dashboardData?.nextSession ?? null} />
+      </div>
+
+      <div className="flex items-center justify-end order-2">
         <BlockSlotDialog salas={dashboardData?.salas || []} onBlocked={fetchData} />
       </div>
 
-      <KPICards kpis={dashboardData?.kpis} />
-      <MonthlyKPIs stats={dashboardData?.monthlyStats} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ReservationsTable reservations={dashboardData?.reservations || []} />
-        </div>
-        <div>
-          <OccupationCalendar days={dashboardData?.weeklyOccupation || []} />
-        </div>
+      <div className="order-3">
+        <KPICards kpis={dashboardData?.kpis} monthlyStats={dashboardData?.monthlyStats} />
       </div>
-    </>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 order-4">
+        <ReservationsTable reservations={dashboardData?.reservations || []} />
+        <OccupationCalendar days={dashboardData?.weeklyOccupation || []} />
+      </div>
+    </div>
   );
 }
 

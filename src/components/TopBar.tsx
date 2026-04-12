@@ -1,5 +1,4 @@
-import { Search, Bell, LogOut, Moon, Sun, User, CreditCard, Settings } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, LogOut, Moon, Sun, User, Settings, Menu } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeCustomizer } from "@/components/ThemeCustomizer";
@@ -10,9 +9,10 @@ interface TopBarProps {
   profile: Profile;
   title?: string;
   onLogout?: () => void;
+  onMenuOpen?: () => void;
 }
 
-export function TopBar({ profile, onLogout }: TopBarProps) {
+export function TopBar({ profile, onLogout, onMenuOpen }: TopBarProps) {
   const { colorMode, setColorMode } = useTheme();
 
   const initials = (profile.company_name || profile.email || "GR")
@@ -23,24 +23,23 @@ export function TopBar({ profile, onLogout }: TopBarProps) {
     .toUpperCase();
 
   return (
-    <div className="flex items-center justify-between gap-4 pb-6">
-      {/* Left: Search */}
-      <div className="relative hidden md:block">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search..."
-          className="w-64 pl-9 pr-14 bg-background border-border h-9 text-sm"
-          readOnly
-        />
-        <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
-          ⌘K
-        </kbd>
+    <div className="flex items-center justify-between gap-4 pb-5">
+      {/* Left: mobile hamburger */}
+      <div className="flex items-center gap-2">
+        {onMenuOpen && (
+          <button
+            onClick={onMenuOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Right: actions */}
       <div className="flex items-center gap-2 ml-auto">
         {/* Notifications */}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+        <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <Bell className="h-4 w-4" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
         </button>
@@ -48,7 +47,7 @@ export function TopBar({ profile, onLogout }: TopBarProps) {
         {/* Dark mode toggle */}
         <button
           onClick={() => setColorMode(colorMode === "light" ? "dark" : "light")}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           {colorMode === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </button>
@@ -74,18 +73,15 @@ export function TopBar({ profile, onLogout }: TopBarProps) {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="h-4 w-4 mr-2" /> Account
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.open("https://gestionroom.com/precios", "_blank")}>
-              <CreditCard className="h-4 w-4 mr-2" /> Billing
+              <User className="h-4 w-4 mr-2" /> Mi cuenta
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Settings className="h-4 w-4 mr-2" /> Settings
+              <Settings className="h-4 w-4 mr-2" /> Ajustes
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {onLogout && (
               <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
-                <LogOut className="h-4 w-4 mr-2" /> Log out
+                <LogOut className="h-4 w-4 mr-2" /> Cerrar sesión
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

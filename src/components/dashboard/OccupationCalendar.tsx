@@ -6,13 +6,13 @@ interface OccupationCalendarProps {
   days: WeeklyDay[];
 }
 
-const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
+const DAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function getOccupationColor(count: number, capacity: number): string {
   if (capacity === 0) return "bg-muted";
   const rate = count / capacity;
-  if (rate >= 0.7) return "bg-emerald-500";
-  if (rate >= 0.3) return "bg-amber-400";
+  if (rate >= 0.7) return "bg-success";
+  if (rate >= 0.3) return "bg-warning";
   if (count > 0) return "bg-muted-foreground/30";
   return "bg-muted";
 }
@@ -26,15 +26,12 @@ function getOccupationLabel(count: number, capacity: number): string {
 export function OccupationCalendar({ days }: OccupationCalendarProps) {
   if (!days || days.length === 0) return null;
 
-  // Pad the first row to start on the correct weekday
   const firstDate = new Date(days[0].date + "T00:00:00");
-  // JS: 0=Sun, we want 0=Mon
   const startDow = (firstDate.getDay() + 6) % 7;
 
   const cells: (WeeklyDay | null)[] = [];
   for (let i = 0; i < startDow; i++) cells.push(null);
   cells.push(...days);
-  // Pad to fill last row
   while (cells.length % 7 !== 0) cells.push(null);
 
   const rows: (WeeklyDay | null)[][] = [];
@@ -48,13 +45,13 @@ export function OccupationCalendar({ days }: OccupationCalendarProps) {
     <Card className="border-border/50">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-foreground">Ocupación — Próximos 14 días</h3>
+          <h3 className="text-sm font-semibold text-foreground">Ocupación — 14 días</h3>
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Alta
+              <span className="h-2 w-2 rounded-full bg-success" /> Alta
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-amber-400" /> Media
+              <span className="h-2 w-2 rounded-full bg-warning" /> Media
             </span>
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-muted-foreground/30" /> Baja
@@ -63,19 +60,19 @@ export function OccupationCalendar({ days }: OccupationCalendarProps) {
         </div>
 
         {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="grid grid-cols-7 gap-1.5 mb-1.5">
           {DAY_LABELS.map((d) => (
-            <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">
+            <div key={d} className="text-center text-[11px] font-medium text-muted-foreground py-1">
               {d}
             </div>
           ))}
         </div>
 
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1.5">
           {rows.flat().map((cell, i) => {
             if (!cell) {
-              return <div key={`empty-${i}`} className="aspect-square" />;
+              return <div key={`empty-${i}`} className="min-h-[44px]" />;
             }
             const dayNum = new Date(cell.date + "T00:00:00").getDate();
             const isToday = cell.date === today;
@@ -84,14 +81,14 @@ export function OccupationCalendar({ days }: OccupationCalendarProps) {
                 key={cell.date}
                 title={getOccupationLabel(cell.count, cell.capacity)}
                 className={cn(
-                  "aspect-square rounded-md flex flex-col items-center justify-center gap-0.5 text-xs transition-colors cursor-default",
+                  "min-h-[44px] rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors cursor-default bg-card border border-border/30",
                   isToday && "ring-2 ring-primary ring-offset-1 ring-offset-background"
                 )}
               >
-                <span className={cn("text-[11px] font-medium", isToday ? "text-foreground" : "text-muted-foreground")}>
+                <span className={cn("text-xs font-medium", isToday ? "text-foreground" : "text-muted-foreground")}>
                   {dayNum}
                 </span>
-                <span className={cn("h-2 w-2 rounded-full", getOccupationColor(cell.count, cell.capacity))} />
+                <span className={cn("h-2.5 w-2.5 rounded-full", getOccupationColor(cell.count, cell.capacity))} />
               </div>
             );
           })}

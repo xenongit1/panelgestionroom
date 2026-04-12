@@ -52,60 +52,57 @@ export function NextSessionWidget({ session }: NextSessionWidgetProps) {
 
   if (!session) {
     return (
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Próxima Sesión
-        </h3>
-        <Card className="border-dashed border-border/60">
-          <CardContent className="p-5 flex flex-col items-center justify-center text-center gap-2">
-            <Clock className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">Sin sesiones pendientes hoy</p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="border-dashed border-border/60">
+        <CardContent className="p-4 flex items-center gap-3 text-center justify-center">
+          <Clock className="h-5 w-5 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">Sin sesiones pendientes hoy</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-        Próxima Sesión
-      </h3>
-      <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-transparent">
-        <CardContent className="p-5 space-y-3">
+    <Card className="border-border/50">
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* Countdown */}
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" />
-            <span className="text-sm text-muted-foreground">Próximo grupo en</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Próximo grupo</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground tracking-tight font-mono">
+              {countdown}
+            </p>
           </div>
-          <p className="text-3xl font-bold text-foreground tracking-tight font-mono">
-            {countdown}
-          </p>
+
+          {/* Divider */}
+          <div className="hidden sm:block w-px h-8 bg-border" />
 
           {/* Details */}
-          <div className="space-y-2 pt-1 border-t border-border/50">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5" />
               <span className="text-foreground font-medium">{session.client_name}</span>
-              <span className="text-muted-foreground">· {session.players} jugadores</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>· {session.players} jug.</span>
+            </span>
+            <span className="flex items-center gap-1.5">
               <DoorOpen className="h-3.5 w-3.5" />
-              <span>{session.salas?.name || "—"}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              {session.salas?.name || "—"}
+            </span>
+            <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
-              <span>{session.time?.slice(0, 5)}</span>
-            </div>
+              {session.time?.slice(0, 5)}
+            </span>
             {session.notes && (
-              <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MessageSquare className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                <span className="italic">{session.notes}</span>
-              </div>
+              <span className="flex items-center gap-1.5">
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span className="italic truncate max-w-[200px]">{session.notes}</span>
+              </span>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

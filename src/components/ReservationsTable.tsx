@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Reserva } from "@/types/dashboard";
 
 type StatusFilter = "todas" | "confirmada" | "pendiente" | "cancelada";
@@ -34,6 +35,7 @@ interface ReservationsTableProps {
 
 export function ReservationsTable({ reservations }: ReservationsTableProps) {
   const [filter, setFilter] = useState<StatusFilter>("todas");
+  const isMobile = useIsMobile();
 
   const filtered =
     filter === "todas"
@@ -44,8 +46,8 @@ export function ReservationsTable({ reservations }: ReservationsTableProps) {
     <Card className="border-border/50">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <CardTitle className="text-lg">Últimas Reservas</CardTitle>
-          <div className="flex gap-1.5">
+          <CardTitle className="text-base">Últimas Reservas</CardTitle>
+          <div className="flex gap-1">
             {filters.map((f) => (
               <Button
                 key={f.value}
@@ -53,7 +55,7 @@ export function ReservationsTable({ reservations }: ReservationsTableProps) {
                 size="sm"
                 onClick={() => setFilter(f.value)}
                 className={cn(
-                  "text-xs h-8",
+                  "text-xs h-7 px-2.5",
                   filter === f.value
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -67,19 +69,34 @@ export function ReservationsTable({ reservations }: ReservationsTableProps) {
       </CardHeader>
       <CardContent className="p-0">
         {filtered.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            No hay <span className="font-semibold text-foreground mx-1">reservas</span> para mostrar
+          <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
+            Sin reservas
+          </div>
+        ) : isMobile ? (
+          <div className="divide-y divide-border/50">
+            {filtered.map((r) => (
+              <div key={r.id} className="px-4 py-3 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-foreground truncate">{r.client_name}</span>
+                  <Badge variant="secondary" className={cn("text-[10px] capitalize shrink-0", statusStyles[r.status])}>
+                    {r.status}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {r.salas?.name || "—"} · {r.date} · {r.time}
+                </p>
+              </div>
+            ))}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="pl-6">Cliente</TableHead>
+                <TableHead className="pl-5">Cliente</TableHead>
                 <TableHead>Sala</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Hora</TableHead>
-                <TableHead>Game Master</TableHead>
-                <TableHead className="pr-6 text-right">Estado</TableHead>
+                <TableHead className="pr-5 text-right">Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -88,12 +105,11 @@ export function ReservationsTable({ reservations }: ReservationsTableProps) {
                   key={r.id}
                   className="cursor-pointer transition-colors duration-150 hover:bg-accent/50"
                 >
-                  <TableCell className="pl-6 font-medium text-foreground">{r.client_name}</TableCell>
+                  <TableCell className="pl-5 font-medium text-foreground">{r.client_name}</TableCell>
                   <TableCell className="text-muted-foreground">{r.salas?.name || "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{r.date}</TableCell>
                   <TableCell className="text-muted-foreground">{r.time}</TableCell>
-                  <TableCell className="text-muted-foreground">{r.game_masters?.name || "—"}</TableCell>
-                  <TableCell className="pr-6 text-right">
+                  <TableCell className="pr-5 text-right">
                     <Badge variant="secondary" className={cn("text-[11px] capitalize", statusStyles[r.status])}>
                       {r.status}
                     </Badge>

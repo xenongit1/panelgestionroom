@@ -6,36 +6,51 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 0 0% 97%;
+    --foreground: 0 0% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 0 0% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 0 0% 12%;
 
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 12%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 46%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 42%;
 
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 0 0% 95%;
+    --accent-foreground: 0 0% 12%;
 
-    --border: 0 0% 92%;
-    --input: 0 0% 92%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
     --ring: 0 0% 9%;
 
     --radius: 0.8rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 96%;
     --sidebar-foreground: 0 0% 26%;
-    --sidebar-border: 0 0% 92%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 93%;
+    --sidebar-accent-foreground: 0 0% 12%;
+    --sidebar-muted: 0 0% 95%;
+    --sidebar-ring: 0 0% 9%;
   }
 
   .dark {
@@ -56,15 +71,29 @@
     --border: 0 0% 16%;
     --input: 0 0% 16%;
     --ring: 0 0% 83%;
+
+    --success: 142 72% 42%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 56%;
+    --warning-foreground: 0 0% 9%;
+
     --sidebar-background: 0 0% 2%;
     --sidebar-foreground: 0 0% 74%;
     --sidebar-border: 0 0% 16%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-muted: 0 0% 14%;
+    --sidebar-ring: 0 0% 83%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
   }
 
   html,
@@ -81,28 +110,28 @@
 
   body {
     @apply bg-background text-foreground;
-    background-image:
-      linear-gradient(to right, #f0f0f0 1px, transparent 1px),
-      linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  .dark body,
-  body.dark,
-  .dark {
-    & body {
-      background-image: none;
-    }
-  }
-
-  html.dark body {
-    background-image: none;
   }
 
   h1,
   h2,
   h3 {
     @apply tracking-tight;
+  }
+
+  /* Custom scrollbar — webkit */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.4);
   }
 }
 
