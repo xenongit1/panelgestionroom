@@ -35,6 +35,8 @@ export interface GameMaster {
 export interface Reserva {
   id: string;
   client_name: string;
+  client_email?: string | null;
+  client_phone?: string | null;
   sala_id: string;
   date: string;
   time: string;

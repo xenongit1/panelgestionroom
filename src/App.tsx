@@ -12,6 +12,7 @@ import SalasPage from "./pages/SalasPage.tsx";
 import ReservasPage from "./pages/ReservasPage.tsx";
 import GameMastersPage from "./pages/GameMastersPage.tsx";
 import AjustesPage from "./pages/AjustesPage.tsx";
+import ReservaDetailPage from "./pages/ReservaDetailPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/salas" element={<SalasPage />} />
             <Route path="/reservas" element={<ReservasPage />} />
+            <Route path="/reservas/:id" element={<ReservaDetailPage />} />
             <Route path="/game-masters" element={<GameMastersPage />} />
             <Route path="/ajustes" element={<AjustesPage />} />
             <Route path="*" element={<NotFound />} />
