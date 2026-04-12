@@ -1,62 +1,116 @@
 
 
-## Plan: Reservas Operativas (Revisado)
+## Plan: Foto Finish Module (Revisado)
+
+### Summary
+Add a "Foto Finish" section to the reservation detail page with private storage, strict ownership validation, and clear provisional UI states.
+
+---
 
 ### 1. Database Migration
 
-Add `client_email` (text, nullable) and `client_phone` (text, nullable) to `reservas`.
-
 ```sql
-ALTER TABLE public.reservas
-  ADD COLUMN IF NOT EXISTS client_email text,
-  ADD COLUMN IF NOT EXISTS client_phone text;
+-- Photo metadata table
+CREATE TABLE public.reserva_photos (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reserva_id uuid NOT NULL REFERENCES public.reservas(id) ON DELETE CASCADE,
+  profile_id uuid NOT NULL,
+  file_path text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.reserva_photos ENABLE ROW LEVEL SECURITY;
+
+-- RLS: owner-scoped access only
+CREATE POLICY "Owner select" ON public.reserva_photos FOR SELECT TO authenticated
+  USING (profile_id = auth.uid());
+CREATE POLICY "Owner insert" ON public.reserva_photos FOR INSERT TO authenticated
+  WITH CHECK (profile_id = auth.uid());
+CREATE POLICY "Owner delete" ON public.reserva_photos FOR DELETE TO authenticated
+  USING (profile_id = auth.uid());
+
+-- PRIVATE bucket (public = false)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('finish-photos', 'finish-photos', false);
+
+-- Storage policies: scoped to profile_id path prefix
+CREATE POLICY "Upload own photos"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'finish-photos' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Read own photos"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'finish-photos' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Delete own photos"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'finish-photos' AND (storage.foldername(name))[1] = auth.uid()::text);
 ```
+
+Key change vs previous plan: **Bucket is private**. Storage policies enforce that users can only access files under their own `{profile_id}/` prefix.
+
+---
 
 ### 2. Backend: `panel-crud` Updates
 
-- **`get-reserva`**: Fetch single reserva by ID with sala/game_master joins. **Validates `profile_id = verified`** — returns 403 if the reserva doesn't belong to the current profile.
-- **`create-reserva`** / **`update-reserva`**: Handle `client_email`, `client_phone`, and `notes` fields (sanitized, max 150 chars for contact, 500 for notes).
-- **`update-reserva`**: Status change to `cancelada` is the primary way to "cancel" a reservation. History is preserved.
-- **`delete-reserva`**: Remains available but is NOT surfaced as a primary action in the UI.
+Four new actions. **All validate reserva ownership** by checking `profile_id` on the `reservas` table before proceeding:
 
-### 3. Types: `Reserva` Update
+- **`list-reserva-photos`**: Validates `reserva.profile_id === verified`, queries `reserva_photos`, generates **signed URLs** (60 min expiry) for each photo via `supabase.storage.from('finish-photos').createSignedUrl()`.
+- **`add-reserva-photo`**: Validates ownership + max 5 photos check, inserts metadata row. The actual file upload happens client-side via Supabase Storage SDK (which respects RLS policies).
+- **`delete-reserva-photo`**: Validates ownership of both the reserva and the photo record, deletes storage object + metadata row.
+- **`send-finish-photos`**: Validates ownership, checks photos exist. Returns `{ success: true, pending: "email_integration" }`. Pure stub — no email sent.
 
-Add `client_email?: string | null` and `client_phone?: string | null` to the `Reserva` interface.
+---
 
-### 4. New Route & Detail Page: `/reservas/:id`
+### 3. New Component: `FotoFinishSection.tsx`
 
-Full page using `DashboardLayout`. Sections:
-- **Header**: client name, status badge, back button
-- **Info grid**: sala, date, time, players, game master, email, phone
-- **Quick actions bar**: WhatsApp / Call / Email buttons — disabled if data missing
-- **Internal notes**: editable textarea with save button, labeled "Nota interna del staff"
-- **Actions footer**: "Cancelar reserva" (sets status to `cancelada`, with confirmation) as the primary destructive action. "Eliminar permanentemente" exists as a secondary, less prominent link/text button — clearly separated and with a double confirmation.
+Located in `src/components/reserva/FotoFinishSection.tsx`.
 
-### 5. Updated `ReservasPage` List
+**Visibility rule**: Only rendered when `reserva.status === 'confirmada'`. This is documented as provisional — when a dedicated "completada"/"finalizada" status is added later, the condition will update. A code comment will mark this explicitly.
 
-**Desktop**: Each row shows quick action icons (WhatsApp, Call, Email, Eye for detail, Edit). No row-level click handler — actions are explicit via icon buttons.
+Features:
+- **Upload**: File input (jpeg/png/webp, max 5MB). Client uploads directly to `finish-photos/{profile_id}/{reserva_id}/{uuid}.ext` via Supabase Storage SDK. Then calls `add-reserva-photo` to register metadata.
+- **Thumbnails**: Grid using signed URLs from `list-reserva-photos`. Each has a delete button with confirmation.
+- **"Enviar Fotos" button**: Visually present but with a clear badge/label: **"Próximamente"** or **"Envío no disponible aún"**. Clicking shows an informational toast: "El envío por email se activará en una próxima actualización." No ambiguity about current capability.
+- **Empty state**: Camera icon + "Sube las fotos de la sesión".
 
-**Mobile**: Each reservation renders as a card. No mixed tap targets. A clear "Ver detalle" button navigates to the detail page. Quick action icons (WhatsApp, Call) appear as separate, well-spaced icon buttons below the card info. No full-card tap behavior.
+---
 
-Additional:
-- Add `client_email` and `client_phone` fields to create/edit dialogs
-- Add `notes` field to create/edit dialogs
-- Add `bloqueado` to filter tabs and badge styles
-- "Cancelar" action available inline (icon or menu) — sets status, doesn't delete
+### 4. Integration into `ReservaDetailPage.tsx`
+
+Insert `FotoFinishSection` between internal notes and actions footer. Conditionally rendered only for `status === 'confirmada'` with a comment documenting the provisional nature.
+
+---
+
+### 5. Fix Runtime Error
+
+Fix `<SelectItem value="">` in `ReservasPage.tsx` — change to `value="none"`.
+
+---
 
 ### 6. Files Changed
 
 | File | Change |
 |---|---|
-| DB migration | Add `client_email`, `client_phone` columns |
-| `supabase/functions/panel-crud/index.ts` | Add `get-reserva` (with ownership check), handle new fields |
-| `src/types/dashboard.ts` | Extend `Reserva` interface |
-| `src/App.tsx` | Add `/reservas/:id` route |
-| `src/pages/ReservasPage.tsx` | Explicit action buttons, mobile cards, new form fields |
-| `src/pages/ReservaDetailPage.tsx` | NEW — full detail page with notes editing |
+| DB migration | `reserva_photos` table + private `finish-photos` bucket + scoped RLS/storage policies |
+| `supabase/functions/panel-crud/index.ts` | 4 new actions with ownership validation + signed URLs |
+| `src/components/reserva/FotoFinishSection.tsx` | NEW — upload, signed-URL thumbnails, delete, stub send |
+| `src/pages/ReservaDetailPage.tsx` | Import and render FotoFinishSection (confirmada only) |
+| `src/pages/ReservasPage.tsx` | Fix SelectItem empty value bug |
 
-### What stays for next phase
-- Foto Finish / image upload
-- Automatizaciones
-- Detail page layout is ready to host future sections below notes
+### Storage Structure
+
+```text
+finish-photos/          (PRIVATE bucket)
+  {profile_id}/
+    {reserva_id}/
+      {uuid}.jpg
+```
+
+Access: signed URLs generated server-side, valid 60 minutes.
+
+### What stays provisional (clearly marked)
+
+- **Visibility**: Tied to `confirmada` status — needs a proper post-game status in the future.
+- **Email sending**: Stub only. UI explicitly says "Próximamente".
+- **Photo watermarking/branding**: Not included.
 
