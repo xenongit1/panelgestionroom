@@ -243,6 +243,38 @@ export type Database = {
         }
         Relationships: []
       }
+      reserva_photos: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          profile_id: string
+          reserva_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          profile_id: string
+          reserva_id: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          profile_id?: string
+          reserva_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserva_photos_reserva_id_fkey"
+            columns: ["reserva_id"]
+            isOneToOne: false
+            referencedRelation: "reservas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservas: {
         Row: {
           client_email: string | null
