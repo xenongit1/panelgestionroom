@@ -10,7 +10,6 @@ export interface Profile {
   plan_status: string | null;
   plan_type: string;
   subscription_end: string | null;
-  
 }
 
 export interface Sala {
@@ -44,6 +43,7 @@ export interface Reserva {
   players: number;
   profile_id: string;
   created_at: string;
+  notes?: string | null;
   salas?: { name: string } | null;
   game_masters?: { name: string } | null;
 }
@@ -56,10 +56,38 @@ export interface KPIs {
   totalGameMasters: number;
 }
 
+export interface MonthlyStats {
+  totalGroups: number;
+  estimatedRevenue: number;
+  occupationEstimate: number;
+  isEstimated: boolean;
+}
+
+export interface NextSession {
+  id: string;
+  client_name: string;
+  time: string;
+  date: string;
+  players: number;
+  status: string;
+  notes?: string | null;
+  salas?: { name: string } | null;
+  game_masters?: { name: string } | null;
+}
+
+export interface WeeklyDay {
+  date: string;
+  count: number;
+  capacity: number;
+}
+
 export interface DashboardData {
   kpis: KPIs;
   reservations: Reserva[];
   todayReservations: Reserva[];
   salas: Sala[];
   gameMasters: GameMaster[];
+  monthlyStats: MonthlyStats;
+  nextSession: NextSession | null;
+  weeklyOccupation: WeeklyDay[];
 }

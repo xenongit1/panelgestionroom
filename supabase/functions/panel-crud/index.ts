@@ -24,6 +24,8 @@ async function verifyProfile(supabase: any, profileId: string): Promise<string |
   return data?.id || null;
 }
 
+const VALID_STATUSES = ["pendiente", "confirmada", "cancelada", "bloqueado"];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -112,6 +114,46 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    // ── BLOCK SLOT ──
+    if (action === "block-slot") {
+      const { sala_id, date, time } = body;
+      if (!sala_id || !date || !time) {
+        return json({ error: "missing_fields" }, 400);
+      }
+
+      // Check for existing non-cancelled reservation/block at this slot
+      const { data: existing } = await supabase
+        .from("reservas")
+        .select("id, status")
+        .eq("profile_id", verified)
+        .eq("sala_id", sala_id)
+        .eq("date", date)
+        .eq("time", time)
+        .neq("status", "cancelada")
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        return json({ error: "slot_occupied" }, 409);
+      }
+
+      const { data, error } = await supabase
+        .from("reservas")
+        .insert({
+          profile_id: verified,
+          sala_id,
+          date,
+          time,
+          status: "bloqueado",
+          client_name: "Bloqueado", // display only — logic uses status field
+          players: 0,
+        })
+        .select("*, salas(name)")
+        .single();
+      if (error) throw error;
+      return json({ data });
+    }
+
     // ── RESERVAS ──
     if (action === "list-reservas") {
       const { data, error } = await supabase
@@ -138,7 +180,7 @@ Deno.serve(async (req) => {
           time,
           game_master_id: game_master_id || null,
           players: Math.min(Math.max(Number(players) || 1, 1), 50),
-          status: ["pendiente", "confirmada", "cancelada"].includes(status) ? status : "pendiente",
+          status: VALID_STATUSES.includes(status) ? status : "pendiente",
         })
         .select("*, salas(name), game_masters(name)")
         .single();
@@ -156,9 +198,10 @@ Deno.serve(async (req) => {
       if (fields.time !== undefined) update.time = fields.time;
       if (fields.game_master_id !== undefined) update.game_master_id = fields.game_master_id || null;
       if (fields.players !== undefined) update.players = Math.min(Math.max(Number(fields.players) || 1, 1), 50);
-      if (fields.status !== undefined && ["pendiente", "confirmada", "cancelada"].includes(fields.status)) {
+      if (fields.status !== undefined && VALID_STATUSES.includes(fields.status)) {
         update.status = fields.status;
       }
+      if (fields.notes !== undefined) update.notes = fields.notes?.trim()?.slice(0, 500) || null;
 
       const { data, error } = await supabase
         .from("reservas")

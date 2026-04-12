@@ -1,14 +1,19 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, DoorOpen, User, Zap } from "lucide-react";
-import type { Reserva } from "@/types/dashboard";
+import { NextSessionWidget } from "@/components/dashboard/NextSessionWidget";
+import type { Reserva, NextSession } from "@/types/dashboard";
 
 interface RightSidebarProps {
   todayReservations: Reserva[];
+  nextSession?: NextSession | null;
 }
 
-export function RightSidebar({ todayReservations }: RightSidebarProps) {
+export function RightSidebar({ todayReservations, nextSession }: RightSidebarProps) {
   return (
     <aside className="hidden xl:flex w-[300px] shrink-0 flex-col border-l bg-card p-5 space-y-6 overflow-y-auto">
+      {/* Próxima Sesión */}
+      <NextSessionWidget session={nextSession ?? null} />
+
       {/* Integraciones */}
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
@@ -23,7 +28,7 @@ export function RightSidebar({ todayReservations }: RightSidebarProps) {
               <p className="text-sm font-medium text-foreground">Stripe</p>
               <p className="text-xs text-muted-foreground">Pagos y facturación</p>
             </div>
-            <Badge variant="secondary" className="text-[10px] bg-success/10 text-success border-0">
+            <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-0">
               Conectado
             </Badge>
           </div>
@@ -48,7 +53,11 @@ export function RightSidebar({ todayReservations }: RightSidebarProps) {
                   <div className="absolute left-[23px] top-[38px] bottom-[-4px] w-px bg-border" />
                 )}
                 <div className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  {res.status === "bloqueado" ? (
+                    <div className="h-2 w-2 rounded-full bg-muted-foreground" />
+                  ) : (
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center justify-between">
@@ -56,10 +65,12 @@ export function RightSidebar({ todayReservations }: RightSidebarProps) {
                     <Badge
                       variant="secondary"
                       className={
-                        res.status === "confirmada"
-                          ? "text-[10px] bg-success/10 text-success border-0"
+                        res.status === "bloqueado"
+                          ? "text-[10px] bg-muted text-muted-foreground border-0"
+                          : res.status === "confirmada"
+                          ? "text-[10px] bg-emerald-500/10 text-emerald-600 border-0"
                           : res.status === "pendiente"
-                          ? "text-[10px] bg-warning/10 text-warning border-0"
+                          ? "text-[10px] bg-amber-400/10 text-amber-600 border-0"
                           : "text-[10px] bg-destructive/10 text-destructive border-0"
                       }
                     >
@@ -70,14 +81,18 @@ export function RightSidebar({ todayReservations }: RightSidebarProps) {
                     <DoorOpen className="h-3 w-3" />
                     <span className="truncate">{res.salas?.name || "—"}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <User className="h-3 w-3" />
-                    <span>{res.game_masters?.name || "—"}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>{res.players} jugadores — {res.client_name}</span>
-                  </div>
+                  {res.status !== "bloqueado" && (
+                    <>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <User className="h-3 w-3" />
+                        <span>{res.game_masters?.name || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>{res.players} jugadores — {res.client_name}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
