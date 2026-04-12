@@ -132,7 +132,7 @@ function ReservaDetail() {
   const isBlocked = reserva.status === "bloqueado";
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-5 max-w-3xl mx-auto px-1 sm:px-0">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/reservas")} className="shrink-0">
@@ -245,7 +245,7 @@ function ReservaDetail() {
 
       {/* Actions footer */}
       <Separator />
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {!isCancelled && !isBlocked && (
           <Button
             variant="destructive"
