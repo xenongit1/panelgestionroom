@@ -252,6 +252,138 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    // ── RESERVA PHOTOS (Foto Finish) ──
+
+    if (action === "list-reserva-photos") {
+      const { reserva_id } = body;
+      if (!reserva_id) return json({ error: "reserva_id_required" }, 400);
+
+      // Validate reservation ownership
+      const { data: reserva } = await supabase
+        .from("reservas")
+        .select("id")
+        .eq("id", reserva_id)
+        .eq("profile_id", verified)
+        .maybeSingle();
+      if (!reserva) return json({ error: "not_found" }, 404);
+
+      const { data: photos, error } = await supabase
+        .from("reserva_photos")
+        .select("*")
+        .eq("reserva_id", reserva_id)
+        .eq("profile_id", verified)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+
+      // Generate signed URLs (60 min)
+      const withUrls = await Promise.all(
+        (photos || []).map(async (p: any) => {
+          const { data: signed } = await supabase.storage
+            .from("finish-photos")
+            .createSignedUrl(p.file_path, 3600);
+          return { ...p, url: signed?.signedUrl || null };
+        })
+      );
+
+      return json({ data: withUrls });
+    }
+
+    if (action === "add-reserva-photo") {
+      const { reserva_id, file_path } = body;
+      if (!reserva_id || !file_path) return json({ error: "missing_fields" }, 400);
+
+      // Validate reservation ownership
+      const { data: reserva } = await supabase
+        .from("reservas")
+        .select("id")
+        .eq("id", reserva_id)
+        .eq("profile_id", verified)
+        .maybeSingle();
+      if (!reserva) return json({ error: "not_found" }, 404);
+
+      // Check max 5 photos
+      const { count } = await supabase
+        .from("reserva_photos")
+        .select("id", { count: "exact", head: true })
+        .eq("reserva_id", reserva_id)
+        .eq("profile_id", verified);
+      if ((count || 0) >= 5) return json({ error: "max_photos_reached" }, 400);
+
+      const { data, error } = await supabase
+        .from("reserva_photos")
+        .insert({ reserva_id, profile_id: verified, file_path })
+        .select()
+        .single();
+      if (error) throw error;
+
+      // Return with signed URL
+      const { data: signed } = await supabase.storage
+        .from("finish-photos")
+        .createSignedUrl(file_path, 3600);
+
+      return json({ data: { ...data, url: signed?.signedUrl || null } });
+    }
+
+    if (action === "delete-reserva-photo") {
+      const { id, reserva_id } = body;
+      if (!id || !reserva_id) return json({ error: "missing_fields" }, 400);
+
+      // Validate reservation ownership
+      const { data: reserva } = await supabase
+        .from("reservas")
+        .select("id")
+        .eq("id", reserva_id)
+        .eq("profile_id", verified)
+        .maybeSingle();
+      if (!reserva) return json({ error: "not_found" }, 404);
+
+      // Get photo record to find file_path
+      const { data: photo } = await supabase
+        .from("reserva_photos")
+        .select("file_path")
+        .eq("id", id)
+        .eq("profile_id", verified)
+        .maybeSingle();
+      if (!photo) return json({ error: "photo_not_found" }, 404);
+
+      // Delete from storage
+      await supabase.storage.from("finish-photos").remove([photo.file_path]);
+
+      // Delete metadata
+      const { error } = await supabase
+        .from("reserva_photos")
+        .delete()
+        .eq("id", id)
+        .eq("profile_id", verified);
+      if (error) throw error;
+      return json({ success: true });
+    }
+
+    if (action === "send-finish-photos") {
+      const { reserva_id } = body;
+      if (!reserva_id) return json({ error: "reserva_id_required" }, 400);
+
+      // Validate reservation ownership
+      const { data: reserva } = await supabase
+        .from("reservas")
+        .select("id, client_email")
+        .eq("id", reserva_id)
+        .eq("profile_id", verified)
+        .maybeSingle();
+      if (!reserva) return json({ error: "not_found" }, 404);
+
+      // Check photos exist
+      const { count } = await supabase
+        .from("reserva_photos")
+        .select("id", { count: "exact", head: true })
+        .eq("reserva_id", reserva_id)
+        .eq("profile_id", verified);
+      if (!count || count === 0) return json({ error: "no_photos" }, 400);
+
+      // Stub: ready for email integration
+      return json({ success: true, pending: "email_integration" });
+    }
+
     // ── GAME MASTERS ──
     if (action === "list-game-masters") {
       const { data, error } = await supabase

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { panelCrud } from "@/lib/api";
+import { getProfileId } from "@/lib/session";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { FotoFinishSection } from "@/components/reserva/FotoFinishSection";
 import type { Reserva } from "@/types/dashboard";
 
 const statusStyles: Record<string, string> = {
@@ -229,6 +231,17 @@ function ReservaDetail() {
           </div>
         </CardContent>
       </Card>
+      {/*
+        Foto Finish section — PROVISIONAL: shown only for "confirmada" status.
+        When a dedicated post-game status (e.g. "completada"/"finalizada") is added,
+        update this condition accordingly.
+      */}
+      {reserva.status === "confirmada" && (
+        <FotoFinishSection
+          reservaId={reserva.id}
+          profileId={getProfileId() || ""}
+        />
+      )}
 
       {/* Actions footer */}
       <Separator />

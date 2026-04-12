@@ -230,10 +230,10 @@ function ReservasContent() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Game Master</Label>
-                <Select value={form.game_master_id} onValueChange={(v) => setForm({ ...form, game_master_id: v })}>
+                <Select value={form.game_master_id || "none"} onValueChange={(v) => setForm({ ...form, game_master_id: v === "none" ? "" : v })}>
                   <SelectTrigger><SelectValue placeholder="Sin asignar" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sin asignar</SelectItem>
+                    <SelectItem value="none">Sin asignar</SelectItem>
                     {gms.map((gm) => <SelectItem key={gm.id} value={gm.id}>{gm.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
