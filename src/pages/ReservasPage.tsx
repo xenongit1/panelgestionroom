@@ -233,7 +233,7 @@ function ReservasContent() {
                 <Select value={form.game_master_id} onValueChange={(v) => setForm({ ...form, game_master_id: v })}>
                   <SelectTrigger><SelectValue placeholder="Sin asignar" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sin asignar</SelectItem>
+                    <SelectItem value="none">Sin asignar</SelectItem>
                     {gms.map((gm) => <SelectItem key={gm.id} value={gm.id}>{gm.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
