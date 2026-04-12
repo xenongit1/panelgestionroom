@@ -1,0 +1,1 @@
+ALTER TABLE public.reservas ADD COLUMN IF NOT EXISTS notes text;

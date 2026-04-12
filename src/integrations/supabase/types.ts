@@ -250,6 +250,7 @@ export type Database = {
           date: string
           game_master_id: string | null
           id: string
+          notes: string | null
           players: number | null
           profile_id: string
           sala_id: string
@@ -262,6 +263,7 @@ export type Database = {
           date: string
           game_master_id?: string | null
           id?: string
+          notes?: string | null
           players?: number | null
           profile_id: string
           sala_id: string
@@ -274,6 +276,7 @@ export type Database = {
           date?: string
           game_master_id?: string | null
           id?: string
+          notes?: string | null
           players?: number | null
           profile_id?: string
           sala_id?: string
