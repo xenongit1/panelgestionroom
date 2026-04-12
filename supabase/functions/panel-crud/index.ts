@@ -26,6 +26,11 @@ async function verifyProfile(supabase: any, profileId: string): Promise<string |
 
 const VALID_STATUSES = ["pendiente", "confirmada", "cancelada", "bloqueado"];
 
+function sanitize(val: string | undefined | null, max: number): string | null {
+  if (!val || typeof val !== "string") return null;
+  return val.trim().slice(0, max) || null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -121,7 +126,6 @@ Deno.serve(async (req) => {
         return json({ error: "missing_fields" }, 400);
       }
 
-      // Check for existing non-cancelled reservation/block at this slot
       const { data: existing } = await supabase
         .from("reservas")
         .select("id, status")
@@ -145,12 +149,29 @@ Deno.serve(async (req) => {
           date,
           time,
           status: "bloqueado",
-          client_name: "Bloqueado", // display only — logic uses status field
+          client_name: "Bloqueado",
           players: 0,
         })
         .select("*, salas(name)")
         .single();
       if (error) throw error;
+      return json({ data });
+    }
+
+    // ── GET SINGLE RESERVA ──
+    if (action === "get-reserva") {
+      const { id } = body;
+      if (!id) return json({ error: "id_required" }, 400);
+
+      const { data, error } = await supabase
+        .from("reservas")
+        .select("*, salas(name), game_masters(name)")
+        .eq("id", id)
+        .eq("profile_id", verified)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return json({ error: "not_found" }, 404);
       return json({ data });
     }
 
@@ -166,7 +187,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "create-reserva") {
-      const { client_name, sala_id, date, time, game_master_id, players, status } = body;
+      const { client_name, sala_id, date, time, game_master_id, players, status, client_email, client_phone, notes } = body;
       if (!client_name || !sala_id || !date || !time) {
         return json({ error: "missing_fields" }, 400);
       }
@@ -181,6 +202,9 @@ Deno.serve(async (req) => {
           game_master_id: game_master_id || null,
           players: Math.min(Math.max(Number(players) || 1, 1), 50),
           status: VALID_STATUSES.includes(status) ? status : "pendiente",
+          client_email: sanitize(client_email, 150),
+          client_phone: sanitize(client_phone, 150),
+          notes: sanitize(notes, 500),
         })
         .select("*, salas(name), game_masters(name)")
         .single();
@@ -201,7 +225,9 @@ Deno.serve(async (req) => {
       if (fields.status !== undefined && VALID_STATUSES.includes(fields.status)) {
         update.status = fields.status;
       }
-      if (fields.notes !== undefined) update.notes = fields.notes?.trim()?.slice(0, 500) || null;
+      if (fields.notes !== undefined) update.notes = sanitize(fields.notes, 500);
+      if (fields.client_email !== undefined) update.client_email = sanitize(fields.client_email, 150);
+      if (fields.client_phone !== undefined) update.client_phone = sanitize(fields.client_phone, 150);
 
       const { data, error } = await supabase
         .from("reservas")

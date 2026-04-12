@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { panelCrud } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,21 +8,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Eye, Phone, Mail, MessageCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Reserva, Sala, GameMaster } from "@/types/dashboard";
 
 const statusStyles: Record<string, string> = {
   confirmada: "bg-success/10 text-success border-0",
   pendiente: "bg-warning/10 text-warning border-0",
   cancelada: "bg-destructive/10 text-destructive border-0",
+  bloqueado: "bg-muted text-muted-foreground border-0",
 };
 
-const emptyForm = { client_name: "", sala_id: "", date: "", time: "", game_master_id: "", players: 2, status: "pendiente" };
+const emptyForm = {
+  client_name: "", sala_id: "", date: "", time: "",
+  game_master_id: "", players: 2, status: "pendiente",
+  client_email: "", client_phone: "", notes: "",
+};
+
+const FILTERS = [
+  { label: "Todas", value: "todas" },
+  { label: "Confirmadas", value: "confirmada" },
+  { label: "Pendientes", value: "pendiente" },
+  { label: "Canceladas", value: "cancelada" },
+  { label: "Bloqueadas", value: "bloqueado" },
+];
 
 export default function ReservasPage() {
   return (
@@ -32,12 +48,14 @@ export default function ReservasPage() {
 }
 
 function ReservasContent() {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [gms, setGms] = useState<GameMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [cancelId, setCancelId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Reserva | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -70,6 +88,9 @@ function ReservasContent() {
       game_master_id: r.game_master_id || "",
       players: r.players,
       status: r.status,
+      client_email: r.client_email || "",
+      client_phone: r.client_phone || "",
+      notes: r.notes || "",
     });
     setDialogOpen(true);
   };
@@ -81,7 +102,13 @@ function ReservasContent() {
     }
     setSaving(true);
     try {
-      const payload = { ...form, game_master_id: form.game_master_id || null };
+      const payload = {
+        ...form,
+        game_master_id: form.game_master_id || null,
+        client_email: form.client_email || null,
+        client_phone: form.client_phone || null,
+        notes: form.notes || null,
+      };
       if (editing) {
         await panelCrud("update-reserva", { id: editing.id, ...payload });
         toast.success("Reserva actualizada");
@@ -95,12 +122,12 @@ function ReservasContent() {
     setSaving(false);
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
+  const handleCancel = async () => {
+    if (!cancelId) return;
     try {
-      await panelCrud("delete-reserva", { id: deleteId });
-      toast.success("Reserva eliminada");
-      setDeleteId(null);
+      await panelCrud("update-reserva", { id: cancelId, status: "cancelada" });
+      toast.success("Reserva cancelada");
+      setCancelId(null);
       load();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -115,10 +142,18 @@ function ReservasContent() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <CardTitle className="text-lg">Gestión de Reservas</CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1.5">
-                {["todas", "confirmada", "pendiente", "cancelada"].map((f) => (
-                  <Button key={f} variant={filter === f ? "default" : "ghost"} size="sm" onClick={() => setFilter(f)} className="text-xs h-8 capitalize">{f === "todas" ? "Todas" : f + "s"}</Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex gap-1 flex-wrap">
+                {FILTERS.map((f) => (
+                  <Button
+                    key={f.value}
+                    variant={filter === f.value ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setFilter(f.value)}
+                    className="text-xs h-8"
+                  >
+                    {f.label}
+                  </Button>
                 ))}
               </div>
               <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1.5" />Nueva</Button>
@@ -130,6 +165,18 @@ function ReservasContent() {
             <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground gap-2">
               <p>No hay reservas</p>
               <Button variant="outline" size="sm" onClick={openCreate}>Crear primera reserva</Button>
+            </div>
+          ) : isMobile ? (
+            <div className="divide-y divide-border/50">
+              {filtered.map((r) => (
+                <MobileReservaCard
+                  key={r.id}
+                  reserva={r}
+                  onDetail={() => navigate(`/reservas/${r.id}`)}
+                  onEdit={() => openEdit(r)}
+                  onCancel={() => setCancelId(r.id)}
+                />
+              ))}
             </div>
           ) : (
             <Table>
@@ -147,21 +194,13 @@ function ReservasContent() {
               </TableHeader>
               <TableBody>
                 {filtered.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="pl-6 font-medium">{r.client_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.salas?.name || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.date}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.time}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.game_masters?.name || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.players}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={cn("text-[11px] capitalize", statusStyles[r.status])}>{r.status}</Badge>
-                    </TableCell>
-                    <TableCell className="pr-6 text-right space-x-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteId(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </TableCell>
-                  </TableRow>
+                  <DesktopReservaRow
+                    key={r.id}
+                    reserva={r}
+                    onDetail={() => navigate(`/reservas/${r.id}`)}
+                    onEdit={() => openEdit(r)}
+                    onCancel={() => setCancelId(r.id)}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -169,11 +208,16 @@ function ReservasContent() {
         </CardContent>
       </Card>
 
+      {/* Create / Edit dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Editar Reserva" : "Nueva Reserva"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>Cliente *</Label><Input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Email</Label><Input type="email" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} placeholder="email@ejemplo.com" /></div>
+              <div><Label>Teléfono</Label><Input type="tel" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} placeholder="+34 600..." /></div>
+            </div>
             <div><Label>Sala *</Label>
               <Select value={form.sala_id} onValueChange={(v) => setForm({ ...form, sala_id: v })}>
                 <SelectTrigger><SelectValue placeholder="Seleccionar sala" /></SelectTrigger>
@@ -206,17 +250,142 @@ function ReservasContent() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Notas internas</Label>
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Comentario interno del staff..."
+                rows={2}
+                maxLength={500}
+                className="resize-none"
+              />
+            </div>
           </div>
           <DialogFooter><Button onClick={handleSave} disabled={saving}>{saving ? "Guardando..." : "Guardar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      {/* Cancel confirmation */}
+      <AlertDialog open={!!cancelId} onOpenChange={() => setCancelId(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>¿Eliminar esta reserva?</AlertDialogTitle><AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Cancelar esta reserva?</AlertDialogTitle>
+            <AlertDialogDescription>La reserva pasará a estado "cancelada" y se mantendrá en el historial.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Volver</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancel}>Sí, cancelar</AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+/* ── Desktop row ── */
+interface RowProps {
+  reserva: Reserva;
+  onDetail: () => void;
+  onEdit: () => void;
+  onCancel: () => void;
+}
+
+function DesktopReservaRow({ reserva: r, onDetail, onEdit, onCancel }: RowProps) {
+  const phone = r.client_phone?.replace(/\s/g, "");
+  const isCancelled = r.status === "cancelada";
+  const isBlocked = r.status === "bloqueado";
+
+  return (
+    <TableRow>
+      <TableCell className="pl-6 font-medium">{r.client_name}</TableCell>
+      <TableCell className="text-muted-foreground">{r.salas?.name || "—"}</TableCell>
+      <TableCell className="text-muted-foreground">{r.date}</TableCell>
+      <TableCell className="text-muted-foreground">{r.time}</TableCell>
+      <TableCell className="text-muted-foreground">{r.game_masters?.name || "—"}</TableCell>
+      <TableCell className="text-muted-foreground">{r.players}</TableCell>
+      <TableCell>
+        <Badge variant="secondary" className={cn("text-[11px] capitalize", statusStyles[r.status])}>{r.status}</Badge>
+      </TableCell>
+      <TableCell className="pr-6 text-right">
+        <div className="inline-flex items-center gap-0.5">
+          {!isBlocked && phone && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <a href={`https://wa.me/${phone}`} target="_blank" rel="noopener noreferrer" title="WhatsApp">
+                <MessageCircle className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          )}
+          {!isBlocked && phone && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <a href={`tel:${phone}`} title="Llamar"><Phone className="h-3.5 w-3.5" /></a>
+            </Button>
+          )}
+          {!isBlocked && r.client_email && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <a href={`mailto:${r.client_email}`} title="Email"><Mail className="h-3.5 w-3.5" /></a>
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onDetail} title="Ver detalle">
+            <Eye className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit} title="Editar">
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          {!isCancelled && !isBlocked && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={onCancel} title="Cancelar">
+              <XCircle className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+/* ── Mobile card ── */
+function MobileReservaCard({ reserva: r, onDetail, onEdit, onCancel }: RowProps) {
+  const phone = r.client_phone?.replace(/\s/g, "");
+  const isCancelled = r.status === "cancelada";
+  const isBlocked = r.status === "bloqueado";
+
+  return (
+    <div className="p-4 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-medium truncate">{r.client_name}</p>
+          <p className="text-xs text-muted-foreground">{r.salas?.name || "—"} · {r.date} · {r.time}</p>
+        </div>
+        <Badge variant="secondary" className={cn("text-[11px] capitalize shrink-0", statusStyles[r.status])}>
+          {r.status}
+        </Badge>
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {r.players} jugadores · {r.game_masters?.name || "Sin GM"}
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button variant="outline" size="sm" onClick={onDetail} className="gap-1.5 h-9">
+          <Eye className="h-3.5 w-3.5" />Ver detalle
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onEdit} className="gap-1.5 h-9">
+          <Pencil className="h-3.5 w-3.5" />Editar
+        </Button>
+        {!isBlocked && phone && (
+          <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+            <a href={`https://wa.me/${phone}`} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" /></a>
+          </Button>
+        )}
+        {!isBlocked && phone && (
+          <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+            <a href={`tel:${phone}`}><Phone className="h-4 w-4" /></a>
+          </Button>
+        )}
+        {!isCancelled && !isBlocked && (
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={onCancel}>
+            <XCircle className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

@@ -245,7 +245,9 @@ export type Database = {
       }
       reservas: {
         Row: {
+          client_email: string | null
           client_name: string
+          client_phone: string | null
           created_at: string
           date: string
           game_master_id: string | null
@@ -258,7 +260,9 @@ export type Database = {
           time: string
         }
         Insert: {
+          client_email?: string | null
           client_name: string
+          client_phone?: string | null
           created_at?: string
           date: string
           game_master_id?: string | null
@@ -271,7 +275,9 @@ export type Database = {
           time: string
         }
         Update: {
+          client_email?: string | null
           client_name?: string
+          client_phone?: string | null
           created_at?: string
           date?: string
           game_master_id?: string | null
